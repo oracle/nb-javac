@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- You may freely edit this file. See commented blocks below for -->
+<!-- some examples of how to customize the build. -->
+<!-- (If you delete it and reopen the project it will be recreated.) -->
+<project name="nb-javac" default="default" basedir=".">
+    <description>Builds, tests, and runs the project nb-javac.</description>
+    <import file="nbproject/build-impl.xml"/>
+    <!--
+
+    There exist several targets which are by default empty and which can be 
+    used for execution of your tasks. These targets are usually executed 
+    before and after some main targets. They are: 
+
+      -pre-init:                 called before initialization of project properties
+      -post-init:                called after initialization of project properties
+      -pre-compile:              called before javac compilation
+      -post-compile:             called after javac compilation
+      -pre-compile-single:       called before javac compilation of single file
+      -post-compile-single:      called after javac compilation of single file
+      -pre-compile-test:         called before javac compilation of JUnit tests
+      -post-compile-test:        called after javac compilation of JUnit tests
+      -pre-compile-test-single:  called before javac compilation of single JUnit test
+      -post-compile-test-single: called after javac compilation of single JUunit test
+      -pre-jar:                  called before JAR building
+      -post-jar:                 called after JAR building
+      -post-clean:               called after cleaning build products
+
+    (Targets beginning with '-' are not intended to be called on their own.)
+
+    Example of inserting an obfuscator after compilation could look like this:
+
+        <target name="-post-compile">
+            <obfuscate>
+                <fileset dir="${build.classes.dir}"/>
+            </obfuscate>
+        </target>
+
+    For list of available properties check the imported 
+    nbproject/build-impl.xml file. 
+
+
+    Another way to customize the build is by overriding existing main targets.
+    The targets of interest are: 
+
+      -init-macrodef-javac:     defines macro for javac compilation
+      -init-macrodef-junit:     defines macro for junit execution
+      -init-macrodef-debug:     defines macro for class debugging
+      -init-macrodef-java:      defines macro for class execution
+      -do-jar-with-manifest:    JAR building (if you are using a manifest)
+      -do-jar-without-manifest: JAR building (if you are not using a manifest)
+      run:                      execution of project 
+      -javadoc-build:           Javadoc generation
+      test-report:              JUnit report generation
+
+    An example of overriding the target for project execution could look like this:
+
+        <target name="run" depends="nb-javac-impl.jar">
+            <exec dir="bin" executable="launcher.exe">
+                <arg file="${dist.jar}"/>
+            </exec>
+        </target>
+
+    Notice that the overridden target depends on the jar target and not only on 
+    the compile target as the regular run target does. Again, for a list of available 
+    properties which you can use, check the target you are overriding in the
+    nbproject/build-impl.xml file. 
+
+    -->
+
+    <!-- suppress javadoc generation for this library, as its wrappers do it -->
+    <target name="-javadoc-build"/>
+    
+    <target name="-post-init">
+        <available file="../../../../../nbbuild/netbeans/java/modules/ext" type="dir" property="modules.ext.exists"/>
+    </target>
+    
+    <target name="-separate-jars">
+        <jar destfile="${dist.dir}/nb-javac-${nb-javac-ver}-api.jar">
+            <fileset dir="${build.classes.dir}">
+               <!-- <include name="com/sun/javadoc/**/*"/> -->
+                <include name="com/sun/source/**/*"/>
+                <include name="javax/lang/**/*"/>
+                <include name="javax/tools/*"/>
+                <include name="jdk/internal/PreviewFeature*"/>
+                <include name="javax/annotation/**/*"/>
+				
+            </fileset>
+			<fileset dir="${nb.javac.dir}">
+				<include name="README.md"/>
+				<include name="LICENSE"/>
+				<include name="nb_javac_releses_tags"/>
+			</fileset>
+        </jar>
+        <jar destfile="${dist.dir}/nb-javac-${nb-javac-ver}-impl.jar">
+            <fileset dir="${build.classes.dir}">
+                <include name="com/sun/tools/**/*"/>
+		<include name="jdk/internal/shellsupport/**/*"/>
+                <include name="jdk/internal/PreviewFeature*"/>
+                <include name="java/lang/**/*"/>
+            </fileset>
+			<fileset dir="${nb.javac.dir}">
+				<include name="README.md"/>
+				<include name="LICENSE"/>
+				<include name="nb_javac_releses_tags"/>
+			</fileset>
+        </jar>
+        <delete file="${dist.jar}"/>
+    </target>
+    
+    <target name="-copy-jars-to-build" if="modules.ext.exists">
+        <copy file="${dist.dir}/nb-javac-${nb-javac-ver}-api.jar" tofile="../../../../../nbbuild/netbeans/java/modules/ext/nb-javac-api.jar" />
+        <copy file="${dist.dir}/nb-javac-${nb-javac-ver}-impl.jar" tofile="../../../../../nbbuild/netbeans/java/modules/ext/nb-javac-impl.jar" />
+        <touch file="../../../../../nbbuild/netbeans/java/.lastModified" />
+    </target>
+    <target name="-post-jar" depends="-post-init,-separate-jars,-copy-jars-to-build">
+    </target>
+
+    <target name="-pre-compile-test" depends="jar"/>
+
+    <target name="zip-nb-javac-sources" depends="clean">
+	<zip basedir="../../../../" destfile="../../../..//nb-javac-${nb-javac-ver}-sources.zip">
+	    <exclude name="**/build/"/>
+            <exclude name="**/dist/"/>
+            <exclude name="**/nbproject/private/"/>
+	    <exclude name="**/nb-javac-sources.zip"/>
+	    <include name="src/jdk.compiler/**"/>
+	    <include name="src/java.compiler/**"/>
+	    <include name="src/jdk.jdeps/**"/>
+	    <include name="make/langtools/netbeans/nb-javac/**"/>
+	    <include name="README.md"/>
+	    <include name="LICENSE"/>
+		<include name=".hgignore"/>
+		<include name=".hgtags"/>
+		<include name="CONTRIBUTING.md"/>
+		<include name="nb_javac_releses_tags"/>
+		<include name="make/langtools/tools/**"/>
+		<include name="make/langtools/build.xml"/>
+		<include name="make/langtools/build.properties"/>
+	
+	</zip>
+    </target>
+</project>
