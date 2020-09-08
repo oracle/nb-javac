@@ -89,6 +89,7 @@
 				<include name="README.md"/>
 				<include name="LICENSE"/>
 				<include name="nb_javac_releses_tags"/>
+				<include name="THIRD_PARTY_LICENSES.txt"/>
 			</fileset>
         </jar>
         <jar destfile="${dist.dir}/nb-javac-${nb-javac-ver}-impl.jar">
@@ -102,6 +103,7 @@
 				<include name="README.md"/>
 				<include name="LICENSE"/>
 				<include name="nb_javac_releses_tags"/>
+				<include name="THIRD_PARTY_LICENSES.txt"/>
 			</fileset>
         </jar>
         <delete file="${dist.jar}"/>
@@ -133,6 +135,7 @@
 		<include name=".hgtags"/>
 		<include name="CONTRIBUTING.md"/>
 		<include name="nb_javac_releses_tags"/>
+		<include name="THIRD_PARTY_LICENSES.txt"/>
 		<include name="make/langtools/tools/**"/>
 		<include name="make/langtools/build.xml"/>
 		<include name="make/langtools/build.properties"/>
