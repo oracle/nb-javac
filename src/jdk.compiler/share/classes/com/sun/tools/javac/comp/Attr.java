@@ -90,7 +90,8 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticFlag;
  *  If you write code that depends on this, you do so at your own risk.
  *  This code and its internal interfaces are subject to change or
  *  deletion without notice.</b>
- */public class Attr extends JCTree.Visitor {
+ */
+public class Attr extends JCTree.Visitor {
     protected static final Context.Key<Attr> attrKey = new Context.Key<>();
 
     final Names names;
@@ -277,7 +278,7 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticFlag;
         Symbol owner = env.info.scope.owner;
            // owner refers to the innermost variable, method or
            // initializer block declaration at this point.
-        return
+        boolean isAssignable =
             v.owner == owner
             ||
             ((owner.name == names.init ||    // i.e. we are in a constructor
@@ -287,6 +288,8 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticFlag;
              v.owner == owner.owner
              &&
              ((v.flags() & STATIC) != 0) == Resolve.isStatic(env));
+        boolean insideCompactConstructor = env.enclMethod != null && TreeInfo.isCompactConstructor(env.enclMethod);
+        return isAssignable & !insideCompactConstructor;
     }
 
     /** Check that variable can be assigned to.
@@ -1103,23 +1106,42 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticFlag;
                     // if this a constructor other than the canonical one
                     if ((tree.sym.flags_field & RECORD) == 0) {
                         JCMethodInvocation app = TreeInfo.firstConstructorCall(tree);
-                        if (app == null
-                                || TreeInfo.name(app.meth) != names._this
-                                || !checkFirstConstructorStat(app, tree, false)) {
+                        if (app == null ||
+                                TreeInfo.name(app.meth) != names._this ||
+                                !checkFirstConstructorStat(app, tree, false)) {
                             log.error(tree, Errors.FirstStatementMustBeCallToAnotherConstructor);
                         }
                     } else {
                         // but if it is the canonical:
 
-                        // if user generated, then it shouldn't explicitly invoke any other constructor
+                        /* if user generated, then it shouldn't:
+                         *     - have an accessibility stricter than that of the record type
+                         *     - explicitly invoke any other constructor
+                         */
                         if ((tree.sym.flags_field & GENERATEDCONSTR) == 0) {
+                            if (Check.protection(m.flags()) > Check.protection(env.enclClass.sym.flags())) {
+                                log.error(tree,
+                                        (env.enclClass.sym.flags() & AccessFlags) == 0 ?
+                                            Errors.InvalidCanonicalConstructorInRecord(
+                                                Fragments.Canonical,
+                                                env.enclClass.sym.name,
+                                                Fragments.CanonicalMustNotHaveStrongerAccess("package")
+                                            ) :
+                                            Errors.InvalidCanonicalConstructorInRecord(
+                                                    Fragments.Canonical,
+                                                    env.enclClass.sym.name,
+                                                    Fragments.CanonicalMustNotHaveStrongerAccess(asFlagSet(env.enclClass.sym.flags() & AccessFlags))
+                                            )
+                                );
+                            }
+
                             JCMethodInvocation app = TreeInfo.firstConstructorCall(tree);
-                            if (app != null
-                                    && (TreeInfo.name(app.meth) == names._this
-                                    || TreeInfo.name(app.meth) == names._super)
-                                    && checkFirstConstructorStat(app, tree, false)) {
+                            if (app != null &&
+                                    (TreeInfo.name(app.meth) == names._this ||
+                                            TreeInfo.name(app.meth) == names._super) &&
+                                    checkFirstConstructorStat(app, tree, false)) {
                                 log.error(tree, Errors.InvalidCanonicalConstructorInRecord(
-                                        Fragments.Canonical, tree.sym,
+                                        Fragments.Canonical, env.enclClass.sym.name,
                                         Fragments.CanonicalMustNotContainExplicitConstructorInvocation));
                             }
                         }
@@ -1127,19 +1149,24 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticFlag;
                         // also we want to check that no type variables have been defined
                         if (!tree.typarams.isEmpty()) {
                             log.error(tree, Errors.InvalidCanonicalConstructorInRecord(
-                                    Fragments.Canonical, tree.sym, Fragments.CanonicalMustNotDeclareTypeVariables));
+                                    Fragments.Canonical, env.enclClass.sym.name, Fragments.CanonicalMustNotDeclareTypeVariables));
                         }
 
                         /* and now we need to check that the constructor's arguments are exactly the same as those of the
                          * record components
                          */
-                        List<Type> recordComponentTypes = TreeInfo.recordFields(env.enclClass).map(vd -> vd.sym.type);
-                        for (JCVariableDecl param : tree.params) {
-                            if (!types.isSameType(param.type, recordComponentTypes.head)) {
+                        List<? extends RecordComponent> recordComponents = env.enclClass.sym.getRecordComponents();
+                        List<Type> recordFieldTypes = TreeInfo.recordFields(env.enclClass).map(vd -> vd.sym.type);
+                        for (JCVariableDecl param: tree.params) {
+                            boolean paramIsVarArgs = (param.sym.flags_field & VARARGS) != 0;
+                            if (!types.isSameType(param.type, recordFieldTypes.head) ||
+                                    (recordComponents.head.isVarargs() != paramIsVarArgs)) {
                                 log.error(param, Errors.InvalidCanonicalConstructorInRecord(
-                                        Fragments.Canonical, tree.sym, Fragments.TypeMustBeIdenticalToCorrespondingRecordComponentType));
+                                        Fragments.Canonical, env.enclClass.sym.name,
+                                        Fragments.TypeMustBeIdenticalToCorrespondingRecordComponentType));
                             }
-                            recordComponentTypes = recordComponentTypes.tail;
+                            recordComponents = recordComponents.tail;
+                            recordFieldTypes = recordFieldTypes.tail;
                         }
                     }
                 }
@@ -1211,18 +1238,15 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticFlag;
                         List<Name> initParamNames = tree.sym.params.map(p -> p.name);
                         if (!initParamNames.equals(recordComponentNames)) {
                             log.error(tree, Errors.InvalidCanonicalConstructorInRecord(
-                                    Fragments.Canonical, env.enclClass.sym, Fragments.CanonicalWithNameMismatch));
-                        }
-                        if (!tree.sym.isPublic()) {
-                            log.error(tree, Errors.InvalidCanonicalConstructorInRecord(
-                                    TreeInfo.isCompactConstructor(tree) ? Fragments.Compact : Fragments.Canonical,
-                                    env.enclClass.sym, Fragments.CanonicalConstructorMustBePublic));
+                                    Fragments.Canonical, env.enclClass.sym.name, Fragments.CanonicalWithNameMismatch));
                         }
                         if (tree.sym.type.asMethodType().thrown != null && !tree.sym.type.asMethodType().thrown.isEmpty()) {
                             log.error(tree,
                                     Errors.InvalidCanonicalConstructorInRecord(
                                             TreeInfo.isCompactConstructor(tree) ? Fragments.Compact : Fragments.Canonical,
-                                            env.enclClass.sym, Fragments.ThrowsClauseNotAllowedForCanonicalConstructor));
+                                            env.enclClass.sym.name,
+                                            Fragments.ThrowsClauseNotAllowedForCanonicalConstructor(
+                                                    TreeInfo.isCompactConstructor(tree) ? Fragments.Compact : Fragments.Canonical)));
                         }
                     }
                 }
@@ -1530,7 +1554,7 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticFlag;
             env.dup(env.tree, env.info.dup(env.info.scope.dup()));
         try {
             //the Formal Parameter of a for-each loop is not in the scope when
-            //attributing the for-each expression; we mimick this by attributing
+            //attributing the for-each expression; we mimic this by attributing
             //the for-each expression first (against original scope).
             Type exprType = types.cvarUpperBound(attribExpr(tree.expr, loopEnv));
             chk.checkNonVoid(tree.pos(), exprType);
@@ -2274,7 +2298,7 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticFlag;
                 env.enclMethod != null &&
                 TreeInfo.isCompactConstructor(env.enclMethod)) {
             log.error(env.enclMethod,
-                    Errors.InvalidCanonicalConstructorInRecord(Fragments.Compact, env.enclMethod.sym, Fragments.CanonicalCantHaveReturnStatement));
+                    Errors.InvalidCanonicalConstructorInRecord(Fragments.Compact, env.enclMethod.sym.name, Fragments.CanonicalCantHaveReturnStatement));
         } else {
             // Attribute return expression, if it exists, and check that
             // it conforms to result type of enclosing method.
@@ -2333,7 +2357,7 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticFlag;
         if (isConstructorCall) {
             // We are seeing a ...this(...) or ...super(...) call.
             // Check that this is the first statement in a constructor.
-            if (checkFirstConstructorStat(tree, env.enclMethod, true)) {
+            checkFirstConstructorStat(tree, env.enclMethod, true);
 
             // Record the fact
             // that this is a constructor call (using isSelfCall).
@@ -2407,9 +2431,8 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticFlag;
                 Type mpt = newMethodTemplate(resultInfo.pt, argtypes, typeargtypes);
                 checkId(tree.meth, site, sym, localEnv,
                         new ResultInfo(kind, mpt));
-                }
-                // Otherwise, `site' is an error type and we do nothing
             }
+            // Otherwise, `site' is an error type and we do nothing
             result = tree.type = syms.voidType;
         } else {
             // Otherwise, we are seeing a regular method call.
@@ -3156,7 +3179,14 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticFlag;
         } finally {
             localEnv.info.scope.leave();
             if (needsRecovery) {
-                attribTree(that, env, recoveryInfo);
+                Type prevResult = result;
+                try {
+                    attribTree(that, env, recoveryInfo);
+                } finally {
+                    if (result == Type.recoveryType) {
+                        result = prevResult;
+                    }
+                }
             }
         }
     }
@@ -3607,7 +3637,7 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticFlag;
             if (!env.info.attributionMode.isSpeculative && that.getMode() == JCMemberReference.ReferenceMode.NEW) {
                 Type enclosingType = exprType.getEnclosingType();
                 if (enclosingType != null && enclosingType.hasTag(CLASS)) {
-                    // Check for the existence of an apropriate outer instance
+                    // Check for the existence of an appropriate outer instance
                     rs.resolveImplicitThis(that.pos(), env, exprType);
                 }
             }
@@ -4435,7 +4465,7 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticFlag;
             case TYPEVAR:
                 // Normally, site.getUpperBound() shouldn't be null.
                 // It should only happen during memberEnter/attribBase
-                // when determining the super type which *must* beac
+                // when determining the super type which *must* be
                 // done before attributing the type variables.  In
                 // other words, we are seeing this illegal program:
                 // class B<T> extends A<T.foo> {}
@@ -5241,6 +5271,96 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticFlag;
 
             // Get environment current at the point of class definition.
             Env<AttrContext> env = typeEnvs.get(c);
+
+            if (c.isSealed() &&
+                    !c.isEnum() &&
+                    !c.isPermittedExplicit &&
+                    c.permitted.isEmpty()) {
+                log.error(TreeInfo.diagnosticPositionFor(c, env.tree), Errors.SealedClassMustHaveSubclasses);
+            }
+
+            if (c.isSealed()) {
+                Set<Symbol> permittedTypes = new HashSet<>();
+                boolean sealedInUnnamed = c.packge().modle == syms.unnamedModule || c.packge().modle == syms.noModule;
+                for (Symbol subTypeSym : c.permitted) {
+                    boolean isTypeVar = false;
+                    if (subTypeSym.type.getTag() == TYPEVAR) {
+                        isTypeVar = true; //error recovery
+                        log.error(TreeInfo.diagnosticPositionFor(subTypeSym, env.tree),
+                                Errors.InvalidPermitsClause(Fragments.IsATypeVariable(subTypeSym.type)));
+                    }
+                    if (subTypeSym.isAnonymous() && !c.isEnum()) {
+                        log.error(TreeInfo.diagnosticPositionFor(subTypeSym, env.tree), Errors.CantInheritFromSealed(c));
+                    }
+                    if (permittedTypes.contains(subTypeSym)) {
+                        DiagnosticPosition pos =
+                                env.enclClass.permitting.stream()
+                                        .filter(permittedExpr -> TreeInfo.diagnosticPositionFor(subTypeSym, permittedExpr, true) != null)
+                                        .limit(2).collect(List.collector()).get(1);
+                        log.error(pos, Errors.InvalidPermitsClause(Fragments.IsDuplicated(subTypeSym.type)));
+                    } else {
+                        permittedTypes.add(subTypeSym);
+                    }
+                    if (sealedInUnnamed) {
+                        if (subTypeSym.packge() != c.packge()) {
+                            log.error(TreeInfo.diagnosticPositionFor(subTypeSym, env.tree), Errors.CantInheritFromSealed(c));
+                        }
+                    } else if (subTypeSym.packge().modle != c.packge().modle) {
+                        log.error(TreeInfo.diagnosticPositionFor(subTypeSym, env.tree), Errors.CantInheritFromSealed(c));
+                    }
+                    if (subTypeSym == c.type.tsym || types.isSuperType(subTypeSym.type, c.type)) {
+                        log.error(TreeInfo.diagnosticPositionFor(subTypeSym, ((JCClassDecl)env.tree).permitting),
+                                Errors.InvalidPermitsClause(
+                                        subTypeSym == c.type.tsym ?
+                                                Fragments.MustNotBeSameClass :
+                                                Fragments.MustNotBeSupertype(subTypeSym.type)
+                                )
+                        );
+                    } else if (!isTypeVar) {
+                        boolean thisIsASuper = types.directSupertypes(subTypeSym.type)
+                                                    .stream()
+                                                    .anyMatch(d -> d.tsym == c);
+                        if (!thisIsASuper) {
+                            log.error(TreeInfo.diagnosticPositionFor(subTypeSym, env.tree),
+                                    Errors.InvalidPermitsClause(Fragments.DoesntExtendSealed(subTypeSym.type)));
+                        }
+                    }
+                }
+            }
+
+            List<ClassSymbol> sealedSupers = types.directSupertypes(c.type)
+                                                  .stream()
+                                                  .filter(s -> s.tsym.isSealed())
+                                                  .map(s -> (ClassSymbol) s.tsym)
+                                                  .collect(List.collector());
+
+            if (sealedSupers.isEmpty()) {
+                if ((c.flags_field & Flags.NON_SEALED) != 0) {
+                    boolean hasErrorSuper = types.directSupertypes(c.type)
+                                                 .stream()
+                                                 .anyMatch(s -> s.tsym.kind == Kind.ERR);
+                    if (!hasErrorSuper) {
+                        log.error(TreeInfo.diagnosticPositionFor(c, env.tree), Errors.NonSealedWithNoSealedSupertype(c));
+                    }
+                }
+            } else {
+                if (c.isLocal() && !c.isEnum()) {
+                    log.error(TreeInfo.diagnosticPositionFor(c, env.tree), Errors.LocalClassesCantExtendSealed);
+                }
+
+                for (ClassSymbol supertypeSym : sealedSupers) {
+                    if (!supertypeSym.permitted.contains(c.type.tsym)) {
+                        log.error(TreeInfo.diagnosticPositionFor(c.type.tsym, env.tree), Errors.CantInheritFromSealed(supertypeSym));
+                    }
+                }
+                if (!c.isNonSealed() && !c.isFinal() && !c.isSealed()) {
+                    log.error(TreeInfo.diagnosticPositionFor(c, env.tree),
+                            c.isInterface() ?
+                                    Errors.NonSealedOrSealedExpected :
+                                    Errors.NonSealedSealedOrFinalExpected);
+                }
+            }
+
             if (env == null) {
                 return;
             }
@@ -5430,7 +5550,7 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticFlag;
             checkSerialVersionUID(tree, c);
         }
         if (allowTypeAnnos) {
-            // Correctly organize the postions of the type annotations
+            // Correctly organize the positions of the type annotations
             typeAnnotations.organizeTypeAnnotationsBodies(tree);
 
             // Check type annotations applicability rules
@@ -5749,7 +5869,7 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticFlag;
      * the compiler has encountered some errors (which might have ended up
      * terminating attribution abruptly); if the compiler is used in fail-over
      * mode (e.g. by an IDE) and the AST contains semantic errors, this routine
-     * prevents NPE to be progagated during subsequent compilation steps.
+     * prevents NPE to be propagated during subsequent compilation steps.
      */
     public void postAttr(JCTree tree) {
         new PostAttrAnalyzer().scan(tree);

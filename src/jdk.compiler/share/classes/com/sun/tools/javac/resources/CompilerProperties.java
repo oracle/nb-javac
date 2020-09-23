@@ -752,6 +752,14 @@ public class CompilerProperties {
         }
         
         /**
+         * compiler.err.cant.inherit.from.sealed=\
+         *    class is not allowed to extend sealed class: {0}
+         */
+        public static Error CantInheritFromSealed(Symbol arg0) {
+            return new Error("compiler", "cant.inherit.from.sealed", arg0);
+        }
+        
+        /**
          * compiler.err.cant.read.file=\
          *    cannot read: {0}
          */
@@ -1031,12 +1039,6 @@ public class CompilerProperties {
          *    bad HTML entity
          */
         public static final Error DcBadEntity = new Error("compiler", "dc.bad.entity");
-        
-        /**
-         * compiler.err.dc.bad.gt=\
-         *    bad use of ''>''
-         */
-        public static final Error DcBadGt = new Error("compiler", "dc.bad.gt");
         
         /**
          * compiler.err.dc.bad.inline.tag=\
@@ -1321,12 +1323,6 @@ public class CompilerProperties {
          *    enum types are not extensible
          */
         public static final Error EnumTypesNotExtensible = new Error("compiler", "enum.types.not.extensible");
-        
-        /**
-         * compiler.err.enums.must.be.static=\
-         *    enum declarations allowed only in static contexts
-         */
-        public static final Error EnumsMustBeStatic = new Error("compiler", "enums.must.be.static");
         
         /**
          * compiler.err.error=\
@@ -1983,7 +1979,7 @@ public class CompilerProperties {
          *    invalid {0} constructor in record {1}\n\
          *    ({2})
          */
-        public static Error InvalidCanonicalConstructorInRecord(Fragment arg0, Symbol arg1, Fragment arg2) {
+        public static Error InvalidCanonicalConstructorInRecord(Fragment arg0, Name arg1, Fragment arg2) {
             return new Error("compiler", "invalid.canonical.constructor.in.record", arg0, arg1, arg2);
         }
         
@@ -2054,6 +2050,15 @@ public class CompilerProperties {
          */
         public static Error InvalidPath(String arg0) {
             return new Error("compiler", "invalid.path", arg0);
+        }
+        
+        /**
+         * compiler.err.invalid.permits.clause=\
+         *    invalid permits clause\n\
+         *    ({0})
+         */
+        public static Error InvalidPermitsClause(Fragment arg0) {
+            return new Error("compiler", "invalid.permits.clause", arg0);
         }
         
         /**
@@ -2312,6 +2317,12 @@ public class CompilerProperties {
         public static Error LimitStringOverflow(String arg0) {
             return new Error("compiler", "limit.string.overflow", arg0);
         }
+        
+        /**
+         * compiler.err.local.classes.cant.extend.sealed=\
+         *    local classes must not extend sealed classes
+         */
+        public static final Error LocalClassesCantExtendSealed = new Error("compiler", "local.classes.cant.extend.sealed");
         
         /**
          * compiler.err.local.enum=\
@@ -2661,6 +2672,27 @@ public class CompilerProperties {
          */
         public static Error NonStaticCantBeRef(Kind arg0, Symbol arg1) {
             return new Error("compiler", "non-static.cant.be.ref", arg0, arg1);
+        }
+        
+        /**
+         * compiler.err.non.sealed.or.sealed.expected=\
+         *    sealed or non-sealed modifiers expected
+         */
+        public static final Error NonSealedOrSealedExpected = new Error("compiler", "non.sealed.or.sealed.expected");
+        
+        /**
+         * compiler.err.non.sealed.sealed.or.final.expected=\
+         *    sealed, non-sealed or final modifiers expected
+         */
+        public static final Error NonSealedSealedOrFinalExpected = new Error("compiler", "non.sealed.sealed.or.final.expected");
+        
+        /**
+         * compiler.err.non.sealed.with.no.sealed.supertype=\
+         *    non-sealed modifier not allowed here\n\
+         *    (class {0} does not have any sealed supertypes)
+         */
+        public static Error NonSealedWithNoSealedSupertype(Symbol arg0) {
+            return new Error("compiler", "non.sealed.with.no.sealed.supertype", arg0);
         }
         
         /**
@@ -3293,12 +3325,6 @@ public class CompilerProperties {
         public static final Error RecordCantDeclareFieldModifiers = new Error("compiler", "record.cant.declare.field.modifiers");
         
         /**
-         * compiler.err.record.declaration.not.allowed.in.inner.classes=\
-         *    record declarations not allowed in inner classes
-         */
-        public static final Error RecordDeclarationNotAllowedInInnerClasses = new Error("compiler", "record.declaration.not.allowed.in.inner.classes");
-        
-        /**
          * compiler.err.record.header.expected=\
          *    record header expected
          */
@@ -3446,6 +3472,18 @@ public class CompilerProperties {
         }
         
         /**
+         * compiler.err.sealed.class.must.have.subclasses=\
+         *    sealed class must have subclasses
+         */
+        public static final Error SealedClassMustHaveSubclasses = new Error("compiler", "sealed.class.must.have.subclasses");
+        
+        /**
+         * compiler.err.sealed.or.non.sealed.local.classes.not.allowed=\
+         *    sealed or non-sealed local classes are not allowed
+         */
+        public static final Error SealedOrNonSealedLocalClassesNotAllowed = new Error("compiler", "sealed.or.non.sealed.local.classes.not.allowed");
+        
+        /**
          * compiler.err.service.definition.is.enum=\
          *    the service definition is an enum: {0}
          */
@@ -3539,6 +3577,12 @@ public class CompilerProperties {
         public static Error StackSimError(Symbol arg0) {
             return new Error("compiler", "stack.sim.error", arg0);
         }
+        
+        /**
+         * compiler.err.static.declaration.not.allowed.in.inner.classes=\
+         *    static declarations not allowed in inner classes
+         */
+        public static final Error StaticDeclarationNotAllowedInInnerClasses = new Error("compiler", "static.declaration.not.allowed.in.inner.classes");
         
         /**
          * compiler.err.static.imp.only.classes.and.interfaces=\
@@ -6059,12 +6103,6 @@ public class CompilerProperties {
         public static final Fragment CanonicalCantHaveReturnStatement = new Fragment("compiler", "canonical.cant.have.return.statement");
         
         /**
-         * compiler.misc.canonical.constructor.must.be.public=\
-         *    canonical constructor must be public
-         */
-        public static final Fragment CanonicalConstructorMustBePublic = new Fragment("compiler", "canonical.constructor.must.be.public");
-        
-        /**
          * compiler.misc.canonical.must.not.contain.explicit.constructor.invocation=\
          *    canonical constructor must not contain explicit constructor invocation
          */
@@ -6075,6 +6113,22 @@ public class CompilerProperties {
          *    canonical constructor must not declare type variables
          */
         public static final Fragment CanonicalMustNotDeclareTypeVariables = new Fragment("compiler", "canonical.must.not.declare.type.variables");
+        
+        /**
+         * compiler.misc.canonical.must.not.have.stronger.access=\
+         *    attempting to assign stronger access privileges; was {0}
+         */
+        public static Fragment CanonicalMustNotHaveStrongerAccess(Set<? extends Flag> arg0) {
+            return new Fragment("compiler", "canonical.must.not.have.stronger.access", arg0);
+        }
+        
+        /**
+         * compiler.misc.canonical.must.not.have.stronger.access=\
+         *    attempting to assign stronger access privileges; was {0}
+         */
+        public static Fragment CanonicalMustNotHaveStrongerAccess(String arg0) {
+            return new Fragment("compiler", "canonical.must.not.have.stronger.access", arg0);
+        }
         
         /**
          * compiler.misc.canonical.with.name.mismatch=\
@@ -6463,6 +6517,14 @@ public class CompilerProperties {
         public static final Fragment ClassFileWrongClass = new Fragment("compiler", "class.file.wrong.class");
         
         /**
+         * compiler.misc.class.is.not.sealed=\
+         *    {0} must be sealed
+         */
+        public static Fragment ClassIsNotSealed(String arg0) {
+            return new Fragment("compiler", "class.is.not.sealed", arg0);
+        }
+        
+        /**
          * compiler.misc.compact=\
          *    compact
          */
@@ -6602,6 +6664,14 @@ public class CompilerProperties {
          */
         public static Fragment DiamondNonGeneric(Type arg0) {
             return new Fragment("compiler", "diamond.non.generic", arg0);
+        }
+        
+        /**
+         * compiler.misc.doesnt.extend.sealed=\
+         *    subclass {0} must extend sealed class
+         */
+        public static Fragment DoesntExtendSealed(Type arg0) {
+            return new Fragment("compiler", "doesnt.extend.sealed", arg0);
         }
         
         /**
@@ -6783,6 +6853,12 @@ public class CompilerProperties {
          *    repeated annotations
          */
         public static final Fragment FeatureRepeatableAnnotations = new Fragment("compiler", "feature.repeatable.annotations");
+        
+        /**
+         * compiler.misc.feature.sealed.classes=\
+         *    sealed classes
+         */
+        public static final Fragment FeatureSealedClasses = new Fragment("compiler", "feature.sealed.classes");
         
         /**
          * compiler.misc.feature.static.intf.method.invoke=\
@@ -7199,6 +7275,22 @@ public class CompilerProperties {
         }
         
         /**
+         * compiler.misc.is.a.type.variable=\
+         *    must not include type variables: {0}
+         */
+        public static Fragment IsATypeVariable(Type arg0) {
+            return new Fragment("compiler", "is.a.type.variable", arg0);
+        }
+        
+        /**
+         * compiler.misc.is.duplicated=\
+         *    must not contain duplicates: {0}
+         */
+        public static Fragment IsDuplicated(Type arg0) {
+            return new Fragment("compiler", "is.duplicated", arg0);
+        }
+        
+        /**
          * compiler.misc.kindname.annotation=\
          *    @interface
          */
@@ -7451,6 +7543,20 @@ public class CompilerProperties {
          *    cannot use raw constructor reference with explicit type parameters for constructor
          */
         public static final Fragment MrefInferAndExplicitParams = new Fragment("compiler", "mref.infer.and.explicit.params");
+        
+        /**
+         * compiler.misc.must.not.be.same.class=\
+         *    illegal self-reference in permits clause
+         */
+        public static final Fragment MustNotBeSameClass = new Fragment("compiler", "must.not.be.same.class");
+        
+        /**
+         * compiler.misc.must.not.be.supertype=\
+         *    illegal reference to supertype {0}
+         */
+        public static Fragment MustNotBeSupertype(Type arg0) {
+            return new Fragment("compiler", "must.not.be.supertype", arg0);
+        }
         
         /**
          * compiler.misc.no.abstracts=\
@@ -7804,9 +7910,11 @@ public class CompilerProperties {
         
         /**
          * compiler.misc.throws.clause.not.allowed.for.canonical.constructor=\
-         *    throws clause not allowed for canonical constructor
+         *    throws clause not allowed for {0} constructor
          */
-        public static final Fragment ThrowsClauseNotAllowedForCanonicalConstructor = new Fragment("compiler", "throws.clause.not.allowed.for.canonical.constructor");
+        public static Fragment ThrowsClauseNotAllowedForCanonicalConstructor(Fragment arg0) {
+            return new Fragment("compiler", "throws.clause.not.allowed.for.canonical.constructor", arg0);
+        }
         
         /**
          * compiler.misc.token.bad-symbol=\
@@ -7896,7 +8004,7 @@ public class CompilerProperties {
         
         /**
          * compiler.misc.type.must.be.identical.to.corresponding.record.component.type=\
-         *    type must match that of the corresponding record component\
+         *    type and arity must match that of the corresponding record component\
          */
         public static final Fragment TypeMustBeIdenticalToCorrespondingRecordComponentType = new Fragment("compiler", "type.must.be.identical.to.corresponding.record.component.type");
         

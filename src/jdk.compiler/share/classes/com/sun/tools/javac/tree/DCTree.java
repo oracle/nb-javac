@@ -650,6 +650,7 @@ public abstract class DCTree implements DocTree {
 
         // The following are not directly exposed through ReferenceTree
         // use DocTrees.getElement(DocTreePath)
+        public final JCTree.JCExpression moduleName;
         public final JCTree qualifierExpression;
         public final Name memberName;
         public final List<JCTree> paramTypes;
@@ -657,8 +658,9 @@ public abstract class DCTree implements DocTree {
         public       Symbol sym;
 
 
-        DCReference(String signature, JCTree qualExpr, Name member, List<JCTree> paramTypes) {
+        DCReference(String signature, JCTree.JCExpression moduleName, JCTree qualExpr, Name member, List<JCTree> paramTypes) {
             this.signature = signature;
+            this.moduleName = moduleName;
             qualifierExpression = qualExpr;
             memberName = member;
             this.paramTypes = paramTypes;

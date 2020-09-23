@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -654,7 +654,7 @@ public class DeferredAttr extends JCTree.Visitor {
                         inferenceContext.notifyChange();
                     } catch (Infer.GraphStrategy.NodeNotFoundException ex) {
                         //this means that we are in speculative mode and the
-                        //set of contraints are too tight for progess to be made.
+                        //set of constraints are too tight for progress to be made.
                         //Just leave the remaining expressions as stuck.
                         break;
                     }
@@ -1088,7 +1088,12 @@ public class DeferredAttr extends JCTree.Visitor {
          * a default expected type (j.l.Object).
          */
         private Type recover(DeferredType dt, Type pt) {
-            dt.check(attr.new RecoveryInfo(deferredAttrContext, pt != null ? pt : Type.recoveryType) {
+            boolean isLambdaOrMemberRef =
+                    dt.tree.hasTag(REFERENCE) || dt.tree.hasTag(LAMBDA);
+            boolean needsRecoveryType =
+                    pt == null || (isLambdaOrMemberRef && !types.isFunctionalInterface(pt));
+            Type ptRecovery = needsRecoveryType ? Type.recoveryType: pt;
+            dt.check(attr.new RecoveryInfo(deferredAttrContext, ptRecovery) {
                 @Override
                 protected Type check(DiagnosticPosition pos, Type found) {
                     return chk.checkNonVoid(pos, super.check(pos, found));

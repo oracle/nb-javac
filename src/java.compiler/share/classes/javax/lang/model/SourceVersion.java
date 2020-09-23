@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -30,10 +30,10 @@ import java.util.Set;
 import java.util.HashSet;
 
 /**
- * Source versions of the Java&trade; programming language.
+ * Source versions of the Java programming language.
  *
  * See the appropriate edition of
- * <cite>The Java&trade; Language Specification</cite>
+ * <cite>The Java Language Specification</cite>
  * for information about a particular source version.
  *
  * <p>Note that additional source version constants will be added to
@@ -60,14 +60,16 @@ public enum SourceVersion {
      *  11: local-variable syntax for lambda parameters
      *  12: no changes (switch expressions in preview)
      *  13: no changes (switch expressions and text blocks in preview)
-     *  14: switch expressions
+     *  14: switch expressions (pattern matching and records in
+     *      preview, text blocks in preview again)
+     *  15: text blocks (records and pattern matching in preview again)
      */
 
     /**
      * The original version.
      *
      * The language described in
-     * <cite>The Java&trade; Language Specification, First Edition</cite>.
+     * <cite>The Java Language Specification, First Edition</cite>.
      */
     RELEASE_0,
 
@@ -75,7 +77,7 @@ public enum SourceVersion {
      * The version recognized by the Java Platform 1.1.
      *
      * The language is {@code RELEASE_0} augmented with nested classes as described in the 1.1 update to
-     * <cite>The Java&trade; Language Specification, First Edition</cite>.
+     * <cite>The Java Language Specification, First Edition</cite>.
      */
     RELEASE_1,
 
@@ -84,7 +86,7 @@ public enum SourceVersion {
      * v 1.2.
      *
      * The language described in
-     * <cite>The Java&trade; Language Specification,
+     * <cite>The Java Language Specification,
      * Second Edition</cite>, which includes the {@code
      * strictfp} modifier.
      */
@@ -111,7 +113,7 @@ public enum SourceVersion {
      * Edition 5.0.
      *
      * The language described in
-     * <cite>The Java&trade; Language Specification,
+     * <cite>The Java Language Specification,
      * Third Edition</cite>.  First release to support
      * generics, annotations, autoboxing, var-args, enhanced {@code
      * for} loop, and hexadecimal floating-point literals.
@@ -203,7 +205,17 @@ public enum SourceVersion {
      *
      * @since 14
      */
-     RELEASE_14;
+    RELEASE_14,
+
+    /**
+     * The version recognized by the Java Platform, Standard Edition
+     * 15.
+     *
+     * Additions in this release include text blocks.
+     *
+     * @since 15
+     */
+     RELEASE_15;
 
     // Note that when adding constants for newer releases, the
     // behavior of latest() and latestSupported() must be updated too.
@@ -214,16 +226,25 @@ public enum SourceVersion {
      * @return the latest source version that can be modeled
      */
     public static SourceVersion latest() {
-        return RELEASE_14;
+        return RELEASE_15;
     }
 
     private static final SourceVersion latestSupported = getLatestSupported();
 
+    /*
+     * The integer version to enum constant mapping implemented by
+     * this method assumes the JEP 322: "Time-Based Release
+     * Versioning" scheme is in effect. This scheme began in JDK
+     * 10. If the JDK versioning scheme is revised, this method may
+     * need to be updated accordingly.
+     */
     private static SourceVersion getLatestSupported() {
         try {
             String specVersion = System.getProperty("java.specification.version");
 
             switch (specVersion) {
+                case "15":
+                    return RELEASE_15;
                 case "14":
                     return RELEASE_14;
                 case "13":
@@ -293,6 +314,8 @@ public enum SourceVersion {
      * @return {@code true} if this string is a
      * syntactically valid identifier or keyword, {@code false}
      * otherwise.
+     *
+     * @jls 3.8 Identifiers
      */
     public static boolean isIdentifier(CharSequence name) {
         String id = name.toString();
@@ -317,12 +340,19 @@ public enum SourceVersion {
 
     /**
      * Returns whether or not {@code name} is a syntactically valid
-     * qualified name in the latest source version.  Unlike {@link
-     * #isIdentifier isIdentifier}, this method returns {@code false}
-     * for keywords, boolean literals, and the null literal.
+     * qualified name in the latest source version.
+     *
+     * Syntactically, a qualified name is a sequence of identifiers
+     * separated by period characters ("{@code .}"). This method
+     * splits the input string into period-separated segments and
+     * applies checks to each segment in turn.
+     *
+     * Unlike {@link #isIdentifier isIdentifier}, this method returns
+     * {@code false} for keywords, boolean literals, and the null
+     * literal in any segment.
      *
      * This method returns {@code true} for <i>restricted
-     * keywords</i> and <i>restricted identifiers</i>
+     * keywords</i> and <i>restricted identifiers</i>.
      *
      * @param name the string to check
      * @return {@code true} if this string is a
@@ -336,12 +366,19 @@ public enum SourceVersion {
 
     /**
      * Returns whether or not {@code name} is a syntactically valid
-     * qualified name in the given source version.  Unlike {@link
-     * #isIdentifier isIdentifier}, this method returns {@code false}
-     * for keywords, boolean literals, and the null literal.
+     * qualified name in the given source version.
+     *
+     * Syntactically, a qualified name is a sequence of identifiers
+     * separated by period characters ("{@code .}"). This method
+     * splits the input string into period-separated segments and
+     * applies checks to each segment in turn.
+     *
+     * Unlike {@link #isIdentifier isIdentifier}, this method returns
+     * {@code false} for keywords, boolean literals, and the null
+     * literal in any segment.
      *
      * This method returns {@code true} for <i>restricted
-     * keywords</i> and <i>restricted identifiers</i>
+     * keywords</i> and <i>restricted identifiers</i>.
      *
      * @param name the string to check
      * @param version the version to use
@@ -408,6 +445,10 @@ public enum SourceVersion {
 
         case "_":
             return version.compareTo(RELEASE_9) >= 0;
+
+     // case "non-sealed": can be added once it is a keyword only
+     // dependent on release and not also preview features being
+     // enabled.
 
             // Keywords common across versions
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -692,15 +692,19 @@ public class Modules extends JCTree.Visitor {
 
             if (msym.kind == ERR) {
                 //make sure the module is initialized:
-                msym.directives = List.nil();
-                msym.exports = List.nil();
-                msym.provides = List.nil();
-                msym.requires = List.nil();
-                msym.uses = List.nil();
+                initErrModule(msym);
             } else if ((msym.flags_field & Flags.AUTOMATIC_MODULE) != 0) {
                 setupAutomaticModule(msym);
             } else {
-                msym.module_info.complete();
+                try {
+                    msym.module_info.complete();
+                } catch (CompletionFailure cf) {
+                    msym.kind = ERR;
+                    //make sure the module is initialized:
+                    initErrModule(msym);
+                    completeModule(msym);
+                    throw cf;
+                }
             }
 
             // If module-info comes from a .java file, the underlying
@@ -713,6 +717,14 @@ public class Modules extends JCTree.Visitor {
             if (msym.module_info.classfile == null || msym.module_info.classfile.getKind() == Kind.CLASS) {
                 completeModule(msym);
             }
+        }
+
+        private void initErrModule(ModuleSymbol msym) {
+            msym.directives = List.nil();
+            msym.exports = List.nil();
+            msym.provides = List.nil();
+            msym.requires = List.nil();
+            msym.uses = List.nil();
         }
 
         @Override
@@ -1220,7 +1232,7 @@ public class Modules extends JCTree.Visitor {
                      */
                     PackageSymbol implementationDefiningPackage = impl.packge();
                     if (implementationDefiningPackage.modle != msym) {
-                        // TODO: should use tree for the implentation name, not the entire provides tree
+                        // TODO: should use tree for the implementation name, not the entire provides tree
                         // TODO: should improve error message to identify the implementation type
                         log.error(tree.pos(), Errors.ServiceImplementationNotInRightModule(implementationDefiningPackage.modle));
                     }

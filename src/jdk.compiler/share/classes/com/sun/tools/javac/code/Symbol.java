@@ -29,6 +29,7 @@ import java.lang.annotation.Annotation;
 import java.lang.annotation.Inherited;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -57,8 +58,9 @@ import com.sun.tools.javac.comp.Attr;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.jvm.*;
-//import com.sun.tools.javac.jvm.PoolConstant;
+import com.sun.tools.javac.jvm.PoolConstant;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.JCTree.Tag;
@@ -421,6 +423,14 @@ public abstract class Symbol extends AnnoConstruct implements PoolConstant, Elem
 
     public boolean isEnum() {
         return (flags() & ENUM) != 0;
+    }
+
+    public boolean isSealed() {
+        return (flags_field & SEALED) != 0;
+    }
+
+    public boolean isNonSealed() {
+        return (flags_field & NON_SEALED) != 0;
     }
 
     public boolean isFinal() {
@@ -1244,10 +1254,14 @@ public abstract class Symbol extends AnnoConstruct implements PoolConstant, Elem
 
     public static class RootPackageSymbol extends PackageSymbol {
         public final MissingInfoHandler missingInfoHandler;
+        public final boolean allowPrivateInvokeVirtual;
 
-        public RootPackageSymbol(Name name, Symbol owner, MissingInfoHandler missingInfoHandler) {
+        public RootPackageSymbol(Name name, Symbol owner,
+                                 MissingInfoHandler missingInfoHandler,
+                                 boolean allowPrivateInvokeVirtual) {
             super(name, owner);
             this.missingInfoHandler = missingInfoHandler;
+            this.allowPrivateInvokeVirtual = allowPrivateInvokeVirtual;
         }
 
     }
@@ -1289,7 +1303,17 @@ public abstract class Symbol extends AnnoConstruct implements PoolConstant, Elem
         /** the annotation metadata attached to this class */
         private AnnotationTypeMetadata annotationTypeMetadata;
 
+        /* the list of any of record components, only non empty if the class is a record
+         * and it has at least one record component
+         */
         private List<RecordComponent> recordComponents = List.nil();
+
+        // sealed classes related fields
+        /** The classes, or interfaces, permitted to extend this class, or interface
+         */
+        public List<Symbol> permitted;
+
+        public boolean isPermittedExplicit = false;
 
         public ClassSymbol(long flags, Name name, Type type, Symbol owner) {
             super(TYP, flags, name, type, owner);
@@ -1299,6 +1323,7 @@ public abstract class Symbol extends AnnoConstruct implements PoolConstant, Elem
             this.sourcefile = null;
             this.classfile = null;
             this.annotationTypeMetadata = AnnotationTypeMetadata.notAnAnnotationType();
+            this.permitted = List.nil();
         }
 
         public ClassSymbol(long flags, Name name, Symbol owner) {
@@ -1496,15 +1521,27 @@ public abstract class Symbol extends AnnoConstruct implements PoolConstant, Elem
             return Flags.asModifierSet(flags & ~DEFAULT);
         }
 
-        public RecordComponent getRecordComponent(VarSymbol field, boolean addIfMissing) {
+        public RecordComponent getRecordComponent(VarSymbol field) {
             for (RecordComponent rc : recordComponents) {
                 if (rc.name == field.name) {
                     return rc;
                 }
             }
+            return null;
+        }
+
+        public RecordComponent getRecordComponent(JCVariableDecl var, boolean addIfMissing, List<JCAnnotation> annotations) {
+            for (RecordComponent rc : recordComponents) {
+                /* it could be that a record erroneously declares two record components with the same name, in that
+                 * case we need to use the position to disambiguate
+                 */
+                if (rc.name == var.name && var.pos == rc.pos) {
+                    return rc;
+                }
+            }
             RecordComponent rc = null;
             if (addIfMissing) {
-                recordComponents = recordComponents.append(rc = new RecordComponent(PUBLIC, field.name, field.type, field.owner));
+                recordComponents = recordComponents.append(rc = new RecordComponent(var, annotations));
             }
             return rc;
         }
@@ -1608,6 +1645,11 @@ public abstract class Symbol extends AnnoConstruct implements PoolConstant, Elem
 
         public boolean isRecord() {
             return (flags_field & RECORD) != 0;
+        }
+
+        @DefinedBy(Api.LANGUAGE_MODEL)
+        public List<Type> getPermittedSubclasses() {
+            return permitted.map(s -> s.type);
         }
     }
 
@@ -1781,12 +1823,28 @@ public abstract class Symbol extends AnnoConstruct implements PoolConstant, Elem
     @SuppressWarnings("preview")
     public static class RecordComponent extends VarSymbol implements RecordComponentElement {
         public MethodSymbol accessor;
+        public JCTree.JCMethodDecl accessorMeth;
+        /* the original annotations applied to the record component
+         */
+        private final List<JCAnnotation> originalAnnos;
+        /* if the user happens to erroneously declare two components with the same name, we need a way to differentiate
+         * them, the code will fail anyway but we need to keep the information for better error recovery
+         */
+        private final int pos;
 
         /**
          * Construct a record component, given its flags, name, type and owner.
          */
-        public RecordComponent(long flags, Name name, Type type, Symbol owner) {
-            super(flags, name, type, owner);
+        public RecordComponent(JCVariableDecl fieldDecl, List<JCAnnotation> annotations) {
+            super(PUBLIC, fieldDecl.sym.name, fieldDecl.sym.type, fieldDecl.sym.owner);
+            this.originalAnnos = annotations;
+            this.pos = fieldDecl.pos;
+        }
+
+        public List<JCAnnotation> getOriginalAnnos() { return originalAnnos; }
+
+        public boolean isVarargs() {
+            return type.hasTag(TypeTag.ARRAY) && ((ArrayType)type).isVarargs();
         }
 
         @Override @DefinedBy(Api.LANGUAGE_MODEL)
@@ -2355,7 +2413,7 @@ public abstract class Symbol extends AnnoConstruct implements PoolConstant, Elem
                 } else {
                     if (refSym.isStatic()) {
                         return ClassFile.REF_invokeStatic;
-                    } else if ((refSym.flags() & PRIVATE) != 0) {
+                    } else if ((refSym.flags() & PRIVATE) != 0 && !allowPrivateInvokeVirtual()) {
                         return ClassFile.REF_invokeSpecial;
                     } else if (refSym.enclClass().isInterface()) {
                         return ClassFile.REF_invokeInterface;
@@ -2366,6 +2424,13 @@ public abstract class Symbol extends AnnoConstruct implements PoolConstant, Elem
             }
         }
 
+        private boolean allowPrivateInvokeVirtual() {
+            Symbol rootPack = this;
+            while (rootPack != null && !(rootPack instanceof RootPackageSymbol)) {
+                rootPack = rootPack.owner;
+            }
+            return rootPack != null && ((RootPackageSymbol) rootPack).allowPrivateInvokeVirtual;
+        }
         @Override
         public int poolTag() {
             return ClassFile.CONSTANT_MethodHandle;

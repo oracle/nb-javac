@@ -159,7 +159,7 @@ public abstract class JCTree implements Tree, Cloneable, DiagnosticPosition {
          */
         SWITCH_EXPRESSION,
 
-        /** Synchronized statements, of type Synchonized.
+        /** Synchronized statements, of type Synchronized.
          */
         SYNCHRONIZED,
 
@@ -764,16 +764,29 @@ public abstract class JCTree implements Tree, Cloneable, DiagnosticPosition {
         public JCExpression extending;
         /** the interfaces implemented by this class */
         public List<JCExpression> implementing;
+        /** the subclasses allowed to extend this class, if sealed */
+        public List<JCExpression> permitting;
         /** all variables and methods defined in this class */
         public List<JCTree> defs;
         /** the symbol */
         public ClassSymbol sym;
 
         protected JCClassDecl(JCModifiers mods,
+                Name name,
+                List<JCTypeParameter> typarams,
+                JCExpression extending,
+                List<JCExpression> implementing,
+                List<JCTree> defs,
+                ClassSymbol sym) {
+            this(mods, name, typarams, extending, implementing, List.nil(), defs, sym);
+        }
+
+        protected JCClassDecl(JCModifiers mods,
                            Name name,
                            List<JCTypeParameter> typarams,
                            JCExpression extending,
                            List<JCExpression> implementing,
+                           List<JCExpression> permitting,
                            List<JCTree> defs,
                            ClassSymbol sym)
         {
@@ -782,6 +795,7 @@ public abstract class JCTree implements Tree, Cloneable, DiagnosticPosition {
             this.typarams = typarams;
             this.extending = extending;
             this.implementing = implementing;
+            this.permitting = permitting;
             this.defs = defs;
             this.sym = sym;
         }
@@ -817,6 +831,11 @@ public abstract class JCTree implements Tree, Cloneable, DiagnosticPosition {
         @DefinedBy(Api.COMPILER_TREE)
         public List<JCExpression> getImplementsClause() {
             return implementing;
+        }
+        @SuppressWarnings("removal")
+        @DefinedBy(Api.COMPILER_TREE)
+        public List<JCExpression> getPermitsClause() {
+            return permitting;
         }
         @DefinedBy(Api.COMPILER_TREE)
         public List<JCTree> getMembers() {

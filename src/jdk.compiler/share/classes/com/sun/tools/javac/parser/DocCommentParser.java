@@ -30,6 +30,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.sun.source.doctree.AttributeTree.ValueKind;
+import com.sun.source.doctree.ErroneousTree;
+import com.sun.source.doctree.UnknownBlockTagTree;
 import com.sun.tools.javac.parser.DocCommentParser.TagParser.Kind;
 import com.sun.tools.javac.parser.JavacParser.AbstractEndPosTable;
 import com.sun.tools.javac.parser.Tokens.Comment;
@@ -59,7 +61,7 @@ import com.sun.tools.javac.util.Names;
 import com.sun.tools.javac.util.Position;
 import com.sun.tools.javac.util.StringUtils;
 
-import static com.sun.tools.javac.util.LayoutCharacters.*;
+import static com.sun.tools.javac.util.LayoutCharacters.EOI;
 
 /**
  *
@@ -246,17 +248,6 @@ public class DocCommentParser {
                     }
                     break;
 
-                case '>':
-                    newline = false;
-                    addPendingText(trees, bp - 1);
-                    trees.add(m.at(bp).newErroneousTree(newString(bp, bp + 1), diagSource, "dc.bad.gt"));
-                    nextChar();
-                    if (textStart == -1) {
-                        textStart = bp;
-                        lastNonWhite = -1;
-                    }
-                    break;
-
                 case '{':
                     inlineTag(trees);
                     break;
@@ -286,7 +277,7 @@ public class DocCommentParser {
     /**
      * Read a series of block tags, including their content.
      * Standard tags parse their content appropriately.
-     * Non-standard tags are represented by {@link UnknownBlockTag}.
+     * Non-standard tags are represented by {@link UnknownBlockTagTree}.
      */
     protected List<DCTree> blockTags() {
         ListBuffer<DCTree> tags = new ListBuffer<>();
@@ -298,7 +289,7 @@ public class DocCommentParser {
     /**
      * Read a single block tag, including its content.
      * Standard tags parse their content appropriately.
-     * Non-standard tags are represented by {@link UnknownBlockTag}.
+     * Non-standard tags are represented by {@link UnknownBlockTagTree}.
      */
     protected DCTree blockTag() {
         int p = bp;
@@ -353,8 +344,8 @@ public class DocCommentParser {
     /**
      * Read a single inline tag, including its content.
      * Standard tags parse their content appropriately.
-     * Non-standard tags are represented by {@link UnknownBlockTag}.
-     * Malformed tags may be returned as {@link Erroneous}.
+     * Non-standard tags are represented by {@link UnknownBlockTagTree}.
+     * Malformed tags may be returned as {@link ErroneousTree}.
      */
     protected DCTree inlineTag() {
         int p = bp - 1;
@@ -452,13 +443,6 @@ public class DocCommentParser {
                     lastNonWhite = bp;
                     break;
 
-                case '@':
-                    if (newline)
-                        break loop;
-                    newline = false;
-                    lastNonWhite = bp;
-                    break;
-
                 default:
                     newline = false;
                     lastNonWhite = bp;
@@ -486,9 +470,9 @@ public class DocCommentParser {
      * Matching pairs of {@literal < >} are skipped. The text is terminated by the first
      * unmatched }. It is an error if the beginning of the next tag is detected.
      */
+    // TODO: allowMember is currently ignored
     // TODO: boolean allowMember should be enum FORBID, ALLOW, REQUIRE
     // TODO: improve quality of parse to forbid bad constructions.
-    // TODO: update to use ReferenceParser
     @SuppressWarnings("fallthrough")
     protected DCReference reference(boolean allowMember) throws ParseException {
         int pos = bp;
@@ -554,6 +538,8 @@ public class DocCommentParser {
         Log.DeferredDiagnosticHandler deferredDiagnosticHandler
                 = new Log.DeferredDiagnosticHandler(fac.log);
 
+        //Can't replace below code with method call as compare to jdk because nb-javac has
+        //to do exception handling here
         try {
             int hash = sig.indexOf("#");
             int lparen = sig.indexOf("(", hash + 1);
@@ -587,11 +573,11 @@ public class DocCommentParser {
             }
 
             if (!deferredDiagnosticHandler.getDiagnostics().isEmpty()) {
-                handleError("dc.ref.syntax.error", pos);
-            }
+            handleError("dc.ref.syntax.error", pos);
+        }
         } finally {
             fac.log.popDiagnosticHandler(deferredDiagnosticHandler);
-        }
+    }    
 
         return m.at(pos).newReferenceTree(sig, qualExpr, member, paramTypes).setEndPos(bp);
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1999, 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -807,7 +807,7 @@ public class Lower extends TreeTranslator {
 
     /** Anon inner classes are used as access constructor tags.
      * accessConstructorTag will use an existing anon class if one is available,
-     * and synthethise a class (with makeEmptyClass) if one is not available.
+     * and synthesize a class (with makeEmptyClass) if one is not available.
      * However, there is a small possibility that an existing class will not
      * be generated as expected if it is inside a conditional with a constant
      * expression. If that is found to be the case, create an empty class tree here.
@@ -1338,7 +1338,7 @@ public class Lower extends TreeTranslator {
             JCExpression site = make.Ident(md.params.head);
             if (acode % 2 != 0) {
                 //odd access codes represent qualified super accesses - need to
-                //emit reference to the direct superclass, even if the refered
+                //emit reference to the direct superclass, even if the referred
                 //member is from an indirect superclass (JLS 13.1)
                 site.setType(types.erasure(types.supertype(vsym.owner.enclClass().type)));
             }
@@ -2256,12 +2256,15 @@ public class Lower extends TreeTranslator {
     }
 
     List<JCTree> generateMandatedAccessors(JCClassDecl tree) {
+        List<JCVariableDecl> fields = TreeInfo.recordFields(tree);
         return tree.sym.getRecordComponents().stream()
                 .filter(rc -> (rc.accessor.flags() & Flags.GENERATED_MEMBER) != 0)
                 .map(rc -> {
+                    // we need to return the field not the record component
+                    JCVariableDecl field = fields.stream().filter(f -> f.name == rc.name).findAny().get();
                     make_at(tree.pos());
                     return make.MethodDef(rc.accessor, make.Block(0,
-                            List.of(make.Return(make.Ident(rc)))));
+                            List.of(make.Return(make.Ident(field)))));
                 }).collect(List.collector());
     }
 
@@ -2295,10 +2298,9 @@ public class Lower extends TreeTranslator {
             }
         }
 
-        // private static final T[] #VALUES = { a, b, c };
-        Name valuesName = names.fromString(target.syntheticNameChar() + "VALUES");
-        while (tree.sym.members().findFirst(valuesName) != null) // avoid name clash
-            valuesName = names.fromString(valuesName + "" + target.syntheticNameChar());
+        // synthetic private static T[] $values() { return new T[] { a, b, c }; }
+        // synthetic private static final T[] $VALUES = $values();
+        Name valuesName = syntheticName(tree, "VALUES");
         Type arrayType = new ArrayType(types.erasure(tree.type), syms.arrayClass);
         VarSymbol valuesVar = new VarSymbol(PRIVATE|FINAL|STATIC|SYNTHETIC,
                                             valuesName,
@@ -2308,7 +2310,15 @@ public class Lower extends TreeTranslator {
                                           List.nil(),
                                           values.toList());
         newArray.type = arrayType;
-        enumDefs.append(make.VarDef(valuesVar, newArray));
+
+        MethodSymbol valuesMethod = new MethodSymbol(PRIVATE|STATIC|SYNTHETIC,
+                syntheticName(tree, "values"),
+                new MethodType(List.nil(), arrayType, List.nil(), tree.type.tsym),
+                tree.type.tsym);
+        enumDefs.append(make.MethodDef(valuesMethod, make.Block(0, List.of(make.Return(newArray)))));
+        tree.sym.members().enter(valuesMethod);
+
+        enumDefs.append(make.VarDef(valuesVar, make.App(make.QualIdent(valuesMethod))));
         tree.sym.members().enter(valuesVar);
 
         Symbol valuesSym = lookupMethod(tree.pos(), names.values,
@@ -2323,9 +2333,7 @@ public class Lower extends TreeTranslator {
             valuesBody = List.of(make.Return(valuesResult));
         } else {
             // template: T[] $result = new T[$values.length];
-            Name resultName = names.fromString(target.syntheticNameChar() + "result");
-            while (tree.sym.members().findFirst(resultName) != null) // avoid name clash
-                resultName = names.fromString(resultName + "" + target.syntheticNameChar());
+            Name resultName = syntheticName(tree, "result");
             VarSymbol resultVar = new VarSymbol(FINAL|SYNTHETIC,
                                                 resultName,
                                                 arrayType,
@@ -2410,6 +2418,13 @@ public class Lower extends TreeTranslator {
             catch (CompletionFailure e) {
                 return false;
             }
+        }
+
+        private Name syntheticName(JCClassDecl tree, String baseName) {
+            Name valuesName = names.fromString(target.syntheticNameChar() + baseName);
+            while (tree.sym.members().findFirst(valuesName) != null) // avoid name clash
+                valuesName = names.fromString(valuesName + "" + target.syntheticNameChar());
+            return valuesName;
         }
 
     /** Translate an enumeration constant and its initializer. */
