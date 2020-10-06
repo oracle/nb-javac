@@ -3883,6 +3883,7 @@ public class JavacParser implements Parser {
             if (token.kind == IDENTIFIER && token.name() == names.record && preview.isEnabled()) {
                 checkSourceLevel(Feature.RECORDS);
                 JCErroneous erroneousTree = syntaxError(token.pos, List.of(mods), Errors.RecordHeaderExpected);
+                nextToken();
                 return toP(F.Exec(erroneousTree));
             } else {
                 if (LAX_IDENTIFIER.accepts(token.kind)) {
@@ -4485,7 +4486,7 @@ public class JavacParser implements Parser {
             int pos = token.pos;
             JCModifiers mods = modifiersOpt();
             if (token.kind == CLASS ||
-                allowRecords && isRecordStart() ||
+                isRecordStart() ||
                 token.kind == INTERFACE ||
                 token.kind == ENUM) {
                 return List.of(classOrRecordOrInterfaceOrEnumDeclaration(mods, dc));

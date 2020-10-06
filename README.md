@@ -1,22 +1,55 @@
+# About nb-javac!
+"nb-javac" is a patched version of "javac", i.e., the Java compiler, has long been part of NetBeans, providing a highly tuned Java compiler specifically for the Java editor i.e., parsing and lexing for features such as syntax coloring, code completion, and the like in NetBeans.
 
-Welcome to NB_JAVAC!
-===================
+# Prerequisite
+  - Git
+  - Ant 1.9.9 or above
+  - JDK-8 (to build nb-javac)
 
-Pre-requisite: Use JDK-8 for building nb-javac
+# Building nb-javac jar files
+1.Obtain the code with the following command
 
-1. Obtain the code with the following command
+    git clone https://orahub.oci.oraclecorp.com/nb-javac.git
 
-hg clone https://hg.netbeans.org/main/nb-java-x
+2.To get a specific version use the following command
 
-2. To get a specific version check the revision number from file nb_javac_releses_tags(present in the cloned repo) and use the following command
+    git checkout <release_tag_name> 
+    
+3.Run the below command to build nb-javac.
 
-hg update -r <REVISION NUMBER>
+    ant -f ./make/langtools/netbeans/nb-javac clean jar
+    
+4.Run below command to zip the source code of nb-javac
+    
+    ant -f ./make/langtools/netbeans/nb-javac zip-nb-javac-sources
+##### Note:
+Build of nb-javac will generate two jars namely `javac-api.jar` and `javac-impl.jar` at location ./make/langtools/netbeans/nb-javac/dist/
 
-Run the below command to build nb-javac. Build of nb-javac will generate two jars 
-namely javac-api.jar and javac-impl.jar at location ./make/langtools/netbeans/nb-javac/dist/
+#Installation/Usage
+1. install nb-javac from jars
+cp nb-java-x/make/langtools/netbeans/nb-javac/dist/nb-javac-$ver-api.jar netbeans/java/libs.javacapi/external/nb-javac-$ver-api.jar
+cp nb-java-x/make/langtools/netbeans/nb-javac/dist/nb-javac-$ver-api.jar netbeans/nbbuild/build/testdist/extralibs/nb-javac-$ver-api.jar
+cp nb-java-x/make/langtools/netbeans/nb-javac/dist/nb-javac-$ver-impl.jar netbeans/nbbuild/build/testdist/extralibs/nb-javac-$ver-impl.jar
+cp nb-java-x/make/langtools/netbeans/nb-javac/dist/nb-javac-$ver-impl.jar netbeans/java/libs.javacimpl/external/nb-javac-$ver-impl.jar
+Open Netbeans and install nb-javac from plugins.
+cp nb-java-x/make/langtools/netbeans/nb-javac/dist/nb-javac-$ver-impl.jar netbeans/nbbuild/testuserdir/modules/ext/nb-javac-$ver-impl.jar
+cp nb-java-x/make/langtools/netbeans/nb-javac/dist/nb-javac-$ver-api.jar netbeans/nbbuild/testuserdir/modules/ext/nb-javac-$ver-api.jar
+touch netbeans/nbbuild/testuserdir/.lastmodified
 
-3. ant -f ./make/langtools/netbeans/nb-javac clean jar
+# Documentation 
 
-Run below command to zip the source code of nb-javac
+| https://cwiki.apache.org/confluence/display/NETBEANS/Overview%3A+nb-javac |
+| https://cwiki.apache.org/confluence/display/NETBEANS/Release+Schedule |
+| https://confluence.oraclecorp.com/confluence/display/NB/nb-javac+JDK14+uptake |
+| https://wiki.se.oracle.com/display/JPG/Behavior+without+NB-Javac |
 
-4. ant -f ./make/langtools/netbeans/nb-javac zip-nb-javac-sources
+# Help
+Subscribe or mail the users@netbeans.apache.org list - Ask questions, find answers, and also help other users.
+
+Subscribe or mail the dev@netbeans.apache.org list - Join development discussions, propose new ideas and connect with contributors.
+
+#Contributing
+See the  [Contributing Policy](./CONTRIBUTING.md)
+
+#Security
+See the  [Security Policy](./SECURITY.md)

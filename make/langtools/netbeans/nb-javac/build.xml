@@ -87,9 +87,8 @@
             </fileset>
 			<fileset dir="${nb.javac.dir}">
 				<include name="README.md"/>
-				<include name="LICENSE"/>
-				<include name="nb_javac_releses_tags"/>
-				<include name="THIRD_PARTY_LICENSES.txt"/>
+				<include name="LICENSE.tx"/>
+				<include name="SECURITY.md"/>
 			</fileset>
         </jar>
         <jar destfile="${dist.dir}/nb-javac-${nb-javac-ver}-impl.jar">
@@ -101,9 +100,8 @@
             </fileset>
 			<fileset dir="${nb.javac.dir}">
 				<include name="README.md"/>
-				<include name="LICENSE"/>
-				<include name="nb_javac_releses_tags"/>
-				<include name="THIRD_PARTY_LICENSES.txt"/>
+				<include name="LICENSE.tx"/>
+				<include name="SECURITY.md"/>
 			</fileset>
         </jar>
         <delete file="${dist.jar}"/>
@@ -130,12 +128,11 @@
 	    <include name="src/jdk.jdeps/**"/>
 	    <include name="make/langtools/netbeans/nb-javac/**"/>
 	    <include name="README.md"/>
-	    <include name="LICENSE"/>
+	    <include name="SECURITY.md"/>
+	    <include name="LICENSE.txt"/>
 		<include name=".hgignore"/>
 		<include name=".hgtags"/>
 		<include name="CONTRIBUTING.md"/>
-		<include name="nb_javac_releses_tags"/>
-		<include name="THIRD_PARTY_LICENSES.txt"/>
 		<include name="make/langtools/tools/**"/>
 		<include name="make/langtools/build.xml"/>
 		<include name="make/langtools/build.properties"/>

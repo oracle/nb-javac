@@ -3446,6 +3446,9 @@ public class Check {
             } else if (target == names.PACKAGE) {
                 if (s.kind == PCK)
                     applicableTargets.add(names.PACKAGE);
+            } else if (target == names.MODULE) {
+                if (s.kind == MDL)
+                    applicableTargets.add(names.MODULE);
             } else if (target == names.TYPE_USE) {
                 if (s.kind == VAR && s.owner.kind == MTH && s.type.hasTag(NONE)) {
                     //cannot type annotate implicitly typed locals
