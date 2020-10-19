@@ -4,7 +4,7 @@
 # Prerequisite
   - Git
   - Ant 1.9.9 or above
-  - JDK-8 (to build nb-javac)
+  - JDK 8 or above (to build nb-javac)
 
 # Building nb-javac jar files
 1.Obtain the code with the following command
