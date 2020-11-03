@@ -9,7 +9,7 @@
 # Building nb-javac jar files
 1.Obtain the code with the following command
 
-    git clone https://orahub.oci.oraclecorp.com/nb-javac.git
+    git clone https://github.com/oracle/nb-javac.git
 
 2.To get a specific version use the following command
 
@@ -17,7 +17,7 @@
     
 3.Run the below command to build nb-javac.
 
-    ant -f ./make/langtools/netbeans/nb-javac clean jar
+    ant -f ./make/langtools/netbeans/nb-javac clean build jar
     
 4.Run below command to zip the source code of nb-javac
     
