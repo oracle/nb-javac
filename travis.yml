@@ -1,0 +1,17 @@
+language: java
+addons:
+  apt:
+    packages:
+      - ant
+      - ant-optional
+      - xvfb
+      - openjfx
+      - libgfortran3
+    
+    -name: Simple Build
+        script:
+            - ant -f ./make/langtools/netbeans/nb-javac clean jar
+
+    -name: Unit Testing
+        script:
+            - ant -f ./make/langtools/netbeans/nb-javac -Dnb.internal.action.name=test -Dignore.failing.tests=true test
