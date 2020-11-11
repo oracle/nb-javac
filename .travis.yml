@@ -7,12 +7,7 @@ language: java
 matrix: 
   include: 
     - 
-      name: "Simple Build"
       jdk: openjdk8
+      name: "Simple Build"
       script: 
         - "ant -f ./make/langtools/netbeans/nb-javac clean jar"
-    - 
-      name: "Unit Testing"
-      jdk: openjdk8
-      script: 
-        - "ant -f ./make/langtools/netbeans/nb-javac -Dnb.internal.action.name=test -Dignore.failing.tests=true test"
