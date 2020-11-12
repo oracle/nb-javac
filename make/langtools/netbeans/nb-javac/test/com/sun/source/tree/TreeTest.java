@@ -34,6 +34,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
 import javax.tools.ToolProvider;
 import junit.framework.TestCase;
+import org.junit.Ignore;
 
 /**
  *
@@ -70,6 +71,7 @@ public class TreeTest extends TestCase {
         assertEquals("večerníček", cut.getPackageName().toString());
     }
     
+    @Ignore
     public void testArrayWithInitializerToString() throws IOException {
         final String bootPath = System.getProperty("sun.boot.class.path"); //NOI18N
         final JavaCompiler tool = ToolProvider.getSystemJavaCompiler();

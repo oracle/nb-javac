@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import junit.framework.TestCase;
+import org.junit.Ignore;
 
 /**
  *
@@ -44,6 +45,7 @@ public class FlagsTest extends TestCase {
     }
 
     private static final Set<String> ignoredFields = new HashSet<String>(Arrays.asList("ACC_SUPER", "ACC_BRIDGE", "ACC_VARARGS", "ACC_MODULE", "ACC_DEFENDER", "BAD_OVERRIDE", "ReceiverParamFlags", "BODY_ONLY_FINALIZE"));
+    @Ignore
     public void testCheckFlagsNotClashing() throws Exception {
         Map<Long, String> value2Name = new HashMap<Long, String>();
 

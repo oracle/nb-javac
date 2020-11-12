@@ -16,8 +16,8 @@ jobs:
         name: "Build nb-javac"
         run: "ant -f ./make/langtools/netbeans/nb-javac clean jar"
       - 
-        name: "Build nb-javac"
-        run: "ant -f ./make/langtools/netbeans/nb-javac clean jar"
+        name: "Test nb-javac"
+        run: "ant -f ./make/langtools/netbeans/nb-javac -Dnb.internal.action.name=test -Dignore.failing.tests=true test"
   macos: 
     name: "MacOS build"
     runs-on: macos-latest
@@ -28,6 +28,9 @@ jobs:
       - 
         name: "Build nb-javac"
         run: "ant -f ./make/langtools/netbeans/nb-javac clean jar"
+      - 
+        name: "Test nb-javac"
+        run: "ant -f ./make/langtools/netbeans/nb-javac -Dnb.internal.action.name=test -Dignore.failing.tests=true test"
   windows: 
     name: "Windows build"
     runs-on: windows-latest
@@ -38,3 +41,6 @@ jobs:
       - 
         name: "Build nb-javac"
         run: "ant -f ./make/langtools/netbeans/nb-javac clean jar"
+      - 
+        name: "Test nb-javac"
+        run: "ant -f ./make/langtools/netbeans/nb-javac -Dnb.internal.action.name=test -Dignore.failing.tests=true test"

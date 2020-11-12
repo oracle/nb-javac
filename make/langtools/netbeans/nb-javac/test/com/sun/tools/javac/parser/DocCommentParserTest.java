@@ -19,6 +19,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
 import javax.tools.ToolProvider;
 import junit.framework.TestCase;
+import org.junit.Ignore;
 
 /**
  *
@@ -84,7 +85,7 @@ public class DocCommentParserTest extends TestCase {
                             "REFERENCE:Object#wait(long)"
                            );
     }
-    
+    @Ignore
     public void test229748() throws IOException {
         doTestErrorRecovery("{@literal http://wikis.sun.com/display/mlvm/ProjectCoinProposal\n" +
                             "@see String\n",

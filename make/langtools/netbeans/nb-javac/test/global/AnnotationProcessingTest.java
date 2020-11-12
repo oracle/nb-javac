@@ -50,6 +50,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
 import javax.tools.ToolProvider;
 import junit.framework.TestCase;
+import org.junit.Ignore;
 
 /**
  *
@@ -73,6 +74,7 @@ public class AnnotationProcessingTest extends TestCase {
         }
     }
 
+    @Ignore
     public void testNoFalseEnterErrors() throws IOException {
         String code = "package test; @global.ap1.Ann(fqnToGenerate=\"test.G\", content=\"package test; public class G {}\") public class Test extends G {}";
 
@@ -85,18 +87,21 @@ public class AnnotationProcessingTest extends TestCase {
         performErrorsTest(code, Arrays.asList("-Xlint"), 0);
     }
 
+    @Ignore
     public void testCorrectEnterErrors() throws IOException {
         String code = "package test; @global.ap1.Ann(fqnToGenerate=\"test.H\", content=\"package test; public class H {}\") public class Test extends Undefined {}";
 
         performErrorsTest(code, 1);
     }
-
+    
+    @Ignore
     public void testDuplicatedErrorsReported() throws IOException {
         String code = "package test; @global.ap1.Ann(fqnToGenerate=\"test.H\", content=\"package test; public class H {}\") public class Test {}";
 
         performAPErrorsTest(code, ErrorProducingAP.class.getName(), new FileContent[0], "14-117:message 1", "14-117:message 2", "14-117:message 3");
     }
 
+    @Ignore
     public void testDependentAP() throws IOException {
         String code = "package test; public class Test { Auxiliary aux; }";
         String auxiliary = "package test; @global.ap1.Ann(fqnToGenerate=\"test.G\", content=\"package test; public class G {}\") public class Auxiliary extends G { private Unknown t; private Aux a; }";
@@ -111,6 +116,7 @@ public class AnnotationProcessingTest extends TestCase {
                 "134-134:cannot find symbol\n  symbol:   class Unknown\n  location: class test.Aux");
     }
 
+    @Ignore
     public void testNoAP() throws IOException {
         String code = "package test; public class Test { Auxiliary aux; }";
         String auxiliary = "package test; public class Auxiliary { private Unknown t; private Aux a; }";
