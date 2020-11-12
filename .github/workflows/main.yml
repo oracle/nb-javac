@@ -7,6 +7,7 @@ on:
     branches: [ master ]
 jobs: 
   linux: 
+    jdk: openjdk8
     name: "Linux Build"
     runs-on: ubuntu-latest
     steps: 
@@ -19,6 +20,7 @@ jobs:
         name: "Test nb-javac"
         run: "ant -f ./make/langtools/netbeans/nb-javac -Dnb.internal.action.name=test -Dignore.failing.tests=true test"
   macos: 
+    jdk: openjdk8
     name: "MacOS build"
     runs-on: macos-latest
     steps: 
@@ -32,6 +34,7 @@ jobs:
         name: "Test nb-javac"
         run: "ant -f ./make/langtools/netbeans/nb-javac -Dnb.internal.action.name=test -Dignore.failing.tests=true test"
   windows: 
+    jdk: openjdk8
     name: "Windows build"
     runs-on: windows-latest
     steps: 
