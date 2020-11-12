@@ -15,7 +15,7 @@ jobs:
       - 
         name: "Build nb-javac"
         run: "ant -f ./make/langtools/netbeans/nb-javac clean jar"
- macos: 
+  macos: 
     name: "MacOS build"
     runs-on: macos-latest
     steps: 
@@ -25,7 +25,7 @@ jobs:
       - 
         name: "Build nb-javac"
         run: "ant -f ./make/langtools/netbeans/nb-javac clean jar"
- windows: 
+  windows: 
     name: "Windows build"
     runs-on: windows-latest
     steps: 
