@@ -284,6 +284,7 @@ is divided into following sections:
             <istrue value="${junit+testng.available}"/>
         </condition>
         <property name="java.failonerror" value="true"/>
+	<property name ="maven.repo.url" value = "https://repo1.maven.org/maven2"/>   
     </target>
     <target name="-post-init">
         <!-- Empty placeholder for easier customization. -->
@@ -1033,10 +1034,6 @@ is divided into following sections:
         <property name="annotation.processing.run.all.processors" value="true"/>
         <property name="javac.processorpath" value="${javac.classpath}"/>
         <property name="javac.test.processorpath" value="${javac.test.classpath}"/>
-        <get dest="dist">
-		      <url url="https://repo1.maven.org/maven2/junit/junit/4.12/junit-4.12.jar"/>
-		      <url url="https://repo1.maven.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"/>
-		    </get>
         <condition property="ap.supported.internal" value="true">
             <not>
                 <matches pattern="1\.[0-5](\..*)?" string="${javac.source}"/>
@@ -1075,6 +1072,12 @@ is divided into following sections:
         <propertyfile file="${built-jar.properties}">
             <entry key="${basedir}" value=""/>
         </propertyfile>
+	<property location="${build.dir}/lib" name="lib.dir"/>
+	<mkdir dir="${lib.dir}"/>
+	<get dest="${lib.dir}">
+	    <url url="${maven.repo.url}/junit/junit/4.12/junit-4.12.jar"/>
+	    <url url="${maven.repo.url}/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"/>
+	</get>    
     </target>
     <target depends="init,-check-automatic-build,-clean-after-automatic-build" name="-verify-automatic-build"/>
     <target depends="init" name="-check-automatic-build">
