@@ -7,38 +7,51 @@
   - JDK 8 or above (to build nb-javac)
 
 # Building nb-javac jar files
-1.Obtain the code with the following command
+1. Obtain the code with the following command
 
-    git clone https://github.com/oracle/nb-javac.git
+```
+$ git clone https://github.com/oracle/nb-javac.git
+```
 
-2.To get a specific version use the following command
+2. To get a specific version use the following command
 
-    git checkout <release_tag_name> 
-    
-3.Run the below command to build nb-javac.
+```bash
+$ git checkout <release_tag_name> 
+```
 
-    ant -f ./make/langtools/netbeans/nb-javac clean build jar
-    
-4.Run below command to zip the source code of nb-javac
-    
-    ant -f ./make/langtools/netbeans/nb-javac zip-nb-javac-sources
-##### Note:
-Build of nb-javac will generate two jars namely `javac-api.jar` and `javac-impl.jar` at location ./make/langtools/netbeans/nb-javac/dist/
+3. Run the below command to build nb-javac.
+
+```bash
+$ ant -f ./make/langtools/netbeans/nb-javac clean jar
+```
+
+Two jars namely `javac-api*.jar` and `javac-impl*.jar` are going to appear
+at location `./make/langtools/netbeans/nb-javac/dist/`
+
+4. Run below command to zip the source code of nb-javac
+
+```bash
+$ ant -f ./make/langtools/netbeans/nb-javac zip-nb-javac-sources
+```
 
 # Installation/Usage
 
 #### 1. Install nb-javac from jars
 
+```bash
 cp nb-java-x/make/langtools/netbeans/nb-javac/dist/nb-javac-$ver-api.jar netbeans/java/libs.javacapi/external/nb-javac-$ver-api.jar
 cp nb-java-x/make/langtools/netbeans/nb-javac/dist/nb-javac-$ver-api.jar netbeans/nbbuild/build/testdist/extralibs/nb-javac-$ver-api.jar
 cp nb-java-x/make/langtools/netbeans/nb-javac/dist/nb-javac-$ver-impl.jar netbeans/nbbuild/build/testdist/extralibs/nb-javac-$ver-impl.jar
 cp nb-java-x/make/langtools/netbeans/nb-javac/dist/nb-javac-$ver-impl.jar netbeans/java/libs.javacimpl/external/nb-javac-$ver-impl.jar
+```
 
 #### 2. Open Netbeans and install nb-javac from plugins
 
+```bash
 cp nb-java-x/make/langtools/netbeans/nb-javac/dist/nb-javac-$ver-impl.jar netbeans/nbbuild/testuserdir/modules/ext/nb-javac-$ver-impl.jar
 cp nb-java-x/make/langtools/netbeans/nb-javac/dist/nb-javac-$ver-api.jar netbeans/nbbuild/testuserdir/modules/ext/nb-javac-$ver-api.jar
 touch netbeans/nbbuild/testuserdir/.lastmodified
+```
 
 # Documentation 
 
