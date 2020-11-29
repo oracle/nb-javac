@@ -69,6 +69,7 @@ import javax.tools.ToolProvider;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import junit.framework.TestCase;
+import org.junit.Ignore;
 
 /**
  *
@@ -395,6 +396,7 @@ public class AttrTest extends TestCase {
         assertEquals(dc.getDiagnostics().toString(), 0, dc.getDiagnostics().size());
     }
     
+    @Ignore
     public void testBreakAttrDuringLambdaAttribution() throws IOException {
         final String bootPath = System.getProperty("sun.boot.class.path"); //NOI18N
         final String version = System.getProperty("java.vm.specification.version"); //NOI18N
