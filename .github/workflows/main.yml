@@ -43,7 +43,3 @@ jobs:
       - 
         name: "Build nb-javac"
         run: "ant -f ./make/langtools/netbeans/nb-javac clean jar"
-      -  
-        name: "Unit Test nb-javac"
-        run: ant -f ./make/langtools/netbeans/nb-javac -Dnb.internal.action.name=test -Dignore.failing.tests=true test
-        
