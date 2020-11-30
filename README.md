@@ -17,7 +17,7 @@
     
 3.Run the below command to build nb-javac.
 
-    ant -f ./make/langtools/netbeans/nb-javac clean build jar
+    ant -f ./make/langtools/netbeans/nb-javac clean jar
     
 4.Run below command to zip the source code of nb-javac
     
