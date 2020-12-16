@@ -3925,11 +3925,6 @@ public class JavacParser implements Parser {
             extending = parseType();
         }
 
-        if (token.kind != IMPLEMENTS && token.kind != LBRACE && token.kind != PERMITS) {
-            syntaxError(token.pos, Errors.Expected3(LBRACE, IMPLEMENTS,PERMITS));
-            skip(false, true, false, false);
-        }
-
         List<JCExpression> implementing = List.nil();
         if (token.kind == IMPLEMENTS) {
             nextToken();
@@ -4024,7 +4019,7 @@ public class JavacParser implements Parser {
     }
 
     List<JCExpression> permitsClause(JCModifiers mods, String classOrInterface) {
-        if (allowSealedTypes && token.kind == PERMITS) {
+        if (allowSealedTypes && token.kind == IDENTIFIER && token.name() == names.permits) {
             checkSourceLevel(Feature.SEALED_CLASSES);
             if ((mods.flags & Flags.SEALED) == 0) {
                 log.error(token.pos, Errors.InvalidPermitsClause(Fragments.ClassIsNotSealed(classOrInterface)));
