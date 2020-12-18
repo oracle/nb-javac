@@ -16,3 +16,4 @@ NashornProfile.txt
 **/JTwork/**
 /make/langtools/netbeans/nb-javac/build/
 /make/langtools/netbeans/nb-javac/dist/
+/make/langtools/netbeans/nb-javac/nbproject/private/
