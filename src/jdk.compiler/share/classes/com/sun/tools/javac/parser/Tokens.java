@@ -148,7 +148,6 @@ public class Tokens {
         NATIVE("native"),
         NEW("new"),
         PACKAGE("package"),
-        PERMITS("permits"),
         PRIVATE("private"),
         PROTECTED("protected"),
         PUBLIC("public"),
