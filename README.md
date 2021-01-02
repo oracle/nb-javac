@@ -36,20 +36,18 @@ $ ant -f ./make/langtools/netbeans/nb-javac zip-nb-javac-sources
 
 # Installation/Usage
 
-#### 1. Install nb-javac from jars
+#### 1. Copy jars by following commands
 
 ```bash
-cp nb-java-x/make/langtools/netbeans/nb-javac/dist/nb-javac-$ver-api.jar netbeans/java/libs.javacapi/external/nb-javac-$ver-api.jar
-cp nb-java-x/make/langtools/netbeans/nb-javac/dist/nb-javac-$ver-api.jar netbeans/nbbuild/build/testdist/extralibs/nb-javac-$ver-api.jar
-cp nb-java-x/make/langtools/netbeans/nb-javac/dist/nb-javac-$ver-impl.jar netbeans/nbbuild/build/testdist/extralibs/nb-javac-$ver-impl.jar
-cp nb-java-x/make/langtools/netbeans/nb-javac/dist/nb-javac-$ver-impl.jar netbeans/java/libs.javacimpl/external/nb-javac-$ver-impl.jar
+cp nb-javac/make/langtools/netbeans/nb-javac/dist/nb-javac-$ver-api.jar netbeans/java/libs.javacapi/external/nb-javac-$ver-api.jar
+cp nb-javac/make/langtools/netbeans/nb-javac/dist/nb-javac-$ver-impl.jar netbeans/java/libs.javacimpl/external/nb-javac-$ver-impl.jar
 ```
 
-#### 2. Open Netbeans and install nb-javac from plugins
+#### 2. Open Netbeans and activate Java SE by creating or opening a ant, maven or gradle then copy jars by these commands
 
 ```bash
-cp nb-java-x/make/langtools/netbeans/nb-javac/dist/nb-javac-$ver-impl.jar netbeans/nbbuild/testuserdir/modules/ext/nb-javac-$ver-impl.jar
-cp nb-java-x/make/langtools/netbeans/nb-javac/dist/nb-javac-$ver-api.jar netbeans/nbbuild/testuserdir/modules/ext/nb-javac-$ver-api.jar
+cp nb-javac/make/langtools/netbeans/nb-javac/dist/nb-javac-$ver-impl.jar netbeans/nbbuild/testuserdir/modules/ext/nb-javac-$ver-impl.jar
+cp nb-javac/make/langtools/netbeans/nb-javac/dist/nb-javac-$ver-api.jar netbeans/nbbuild/testuserdir/modules/ext/nb-javac-$ver-api.jar
 touch netbeans/nbbuild/testuserdir/.lastmodified
 ```
 
