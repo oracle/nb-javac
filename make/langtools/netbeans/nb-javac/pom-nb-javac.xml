@@ -29,9 +29,17 @@
 
   <developers>
     <developer>
-      <email>mblaesing@doppel-helix.eu</email>
-      <name>Matthias Bläsing</name>
-      <url>https://github.com/matthiasblaesing/</url>
+      <email>akhilesh.s.singh@oracle.com</email>
+      <name>Akhilesh Singh</name>
+      <url>https://github.com/singh-akhilesh</url>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <email>akshay.ag.gupta@oracle.com</email>
+      <name>Akshay Guptah</name>
+      <url>https://github.com/Akshay-Gupta-Oracle</url>
       <roles>
         <role>Developer</role>
       </roles>
