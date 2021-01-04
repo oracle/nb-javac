@@ -117,7 +117,7 @@
 
     <target name="-pre-compile-test" depends="jar"/>
 
-    <target name="zip-nb-javac-sources">
+    <target name="zip-nb-javac-sources" depends="init">
         <zip basedir="../../../../" destfile="dist/nb-javac-${nb-javac-ver}-sources.zip">
             <exclude name="**/build/"/>
             <exclude name="**/dist/"/>
