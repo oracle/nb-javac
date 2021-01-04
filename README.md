@@ -50,13 +50,13 @@ $ ant -f ./make/langtools/netbeans/nb-javac zip-nb-javac-sources
 
 4. Run
    ```
-   ant -f ./make/langtools/netbeans/nb-javac publish-to-ossrh-snapshots
+   ant -f ./make/langtools/netbeans/nb-javac publish-to-ossrh-snapshots -Dmaven.groupId=your.grp.id
    ```
    to publish snapshot artifacts (https://oss.sonatype.org/content/repositories/snapshots/)
 
 5. Run
    ```
-   ant -f ./make/langtools/netbeans/nb-javac publish-to-maven-central
+   ant -f ./make/langtools/netbeans/nb-javac publish-to-maven-central -Dmaven.groupId=your.grp.id -Dmaven.version=15.0.3
    ```
    to stage the release, which will get promoted to maven central, after it has
    been manually released.

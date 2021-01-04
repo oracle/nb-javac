@@ -4,7 +4,7 @@
   http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>eu.doppel-helix.com.github.oracle.nb-javac</groupId>
+  <groupId>TEMPLATE</groupId>
   <artifactId>nb-javac</artifactId>
   <version>TEMPLATE</version>
   <packaging>jar</packaging>
