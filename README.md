@@ -56,7 +56,7 @@ $ ant -f ./make/langtools/netbeans/nb-javac zip-nb-javac-sources
 
 5. Run
    ```
-   ant -f ./make/langtools/netbeans/nb-javac publish-to-maven-central -Dmaven.groupId=your.grp.id -Dmaven.version=15.0.3
+   ant -f ./make/langtools/netbeans/nb-javac publish-to-maven-central -Dmaven.groupId=your.grp.id
    ```
    to stage the release, which will get promoted to maven central, after it has
    been manually released.
