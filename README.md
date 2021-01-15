@@ -43,18 +43,13 @@ $ ant -f ./make/langtools/netbeans/nb-javac zip-nb-javac-sources
 2. Configure the maven installation so that the credentials are made available
    for the server with the id oss.sonatype.org
 
-3. If you want to publish nb-javac as a non-oracle contributor under your own
-   groupId, you need to update the `make/langtools/netbeans/nb-javac/pom-nb-javac`
-   file. You need to update at least the elements: `groupId`, `developers`,
-   `scm`, `url` and `description`.
-
-4. Run
+3. Run
    ```
    ant -f ./make/langtools/netbeans/nb-javac publish-to-ossrh-snapshots -Dmaven.groupId=your.grp.id
    ```
    to publish snapshot artifacts (https://oss.sonatype.org/content/repositories/snapshots/)
 
-5. Run
+4. Run
    ```
    ant -f ./make/langtools/netbeans/nb-javac publish-to-maven-central -Dmaven.groupId=your.grp.id
    ```
