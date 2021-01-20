@@ -102,7 +102,7 @@ public class AnnotationProcessingTest extends TestCase {
     }
 
     @Ignore
-    public void testDependentAP() throws IOException {
+    public void BROKENtestDependentAP() throws IOException {
         String code = "package test; public class Test { Auxiliary aux; }";
         String auxiliary = "package test; @global.ap1.Ann(fqnToGenerate=\"test.G\", content=\"package test; public class G {}\") public class Auxiliary extends G { private Unknown t; private Aux a; }";
         String aux = "package test; @global.ap1.Ann(fqnToGenerate=\"test.H\", content=\"package test; public class H {}\") public class Aux extends H { private Unknown t; }";

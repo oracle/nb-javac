@@ -68,7 +68,10 @@
     -->
 
     <target name="-pre-init">
+        <mkdir dir="build/lib"/>
         <get dest="compiler.jar" skipexisting="true" src="https://repo1.maven.org/maven2/org/frgaal/compiler/15.0.0/compiler-15.0.0.jar"></get>
+        <get dest="build/lib/junit-4.12.jar" skipexisting="true" src="https://repo1.maven.org/maven2/junit/junit/4.12/junit-4.12.jar"></get>
+        <get dest="build/lib/hamcrest-core-1.3.jar" skipexisting="true" src="https://repo1.maven.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"></get>
     </target>
 
     <target name="-init-macrodef-javac">
@@ -87,26 +90,32 @@
             <attribute default="${empty.dir}" name="gensrcdir"/>
             <element name="customize" optional="true"/>
             <sequential>
+                <condition property="zdr.@{destdir}" value="test">
+                    <equals arg1="build/test/classes" arg2="@{destdir}"/>
+                </condition>
+                <property name="zdr.@{destdir}" value="src,../../../../src/java.compiler/share/classes,../../../../src/jdk.compiler/share/classes"/>
                 <property location="${build.dir}/empty" name="empty.dir"/>
                 <mkdir dir="${empty.dir}"/>
-                <multirootfileset id="zdr" basedirs="src,../../../../src/java.compiler/share/classes,../../../../src/jdk.compiler/share/classes">
+                <multirootfileset id="zdr.@{destdir}" basedirs="${zdr.@{destdir}}">
                     <include name="**/*.java"/>
                     <exclude name="**/module-info.java"/>
                     <exclude name="com/sun/tools/javac/main/JavacToolProvider.java"/>
                         <exclude name="com/sun/tools/sjavac/**"/>
                 </multirootfileset>
-                <pathconvert property="zdr" refid="zdr" pathsep=" "/>
+                <pathconvert property="zdr.@{destdir}.list" refid="zdr.@{destdir}" pathsep=" "/>
                 <exec failonerror="true" executable="${java.home}/bin/java">
                     <arg value="-jar"/>
                     <arg value="compiler.jar"/>
                     <arg line="${javac.compilerargs}"/>
+                    <arg value="-cp"/>
+                    <arg value="@{classpath}"/>
                     <arg value="-d"/>
                     <arg value="@{destdir}"/>
                     <arg value="--target"/>
                     <arg value="1.8"/>
                     <arg value="--source"/>
                     <arg value="15"/>
-                    <arg line="${zdr}"/>
+                    <arg line="${zdr.@{destdir}.list}"/>
                 </exec>
             </sequential>
         </macrodef>

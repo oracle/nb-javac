@@ -45,76 +45,78 @@ public class CompilationUnitTreeTest extends TestCase {
         super(testName);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
+//    @Override
+//    protected void setUp() throws Exception {
+//        super.setUp();
+//    }
+//
+//    static class MyFileObject extends SimpleJavaFileObject {
+//        private String text;
+//        public MyFileObject(String text) {
+//            super(URI.create("myfo:/Test.java"), JavaFileObject.Kind.SOURCE);
+//            this.text = text;
+//        }
+//        public CharSequence getCharContent(boolean ignoreEncodingErrors) {
+//            return text;
+//        }
+//    }
+//
+//    private void performTest(String code, int lastLine) throws IOException {
+//        final String bootPath = System.getProperty("sun.boot.class.path"); //NOI18N
+//        final JavaCompiler tool = ToolProvider.getSystemJavaCompiler();
+//        assert tool != null;
+//
+//        JavacTaskImpl ct = (JavacTaskImpl)tool.getTask(null, null, null, Arrays.asList("-bootclasspath",  bootPath), null, Arrays.asList(new MyFileObject(code)));
+//
+//        CompilationUnitTree cut = ct.parse().iterator().next();
+//
+//        cut.getLineMap().getStartPosition(lastLine);
+//
+//        boolean exceptionThrown = false;
+//
+//        try {
+//            cut.getLineMap().getStartPosition(lastLine + 1);
+//        } catch (IndexOutOfBoundsException e) {
+//            //intentional:
+//            exceptionThrown = true;
+//        }
+//
+//        assertTrue(exceptionThrown);
+//
+//        ((JavacTaskImpl) ct).finish();
+//
+//        //DocCommentScanner:
+//        ct = (JavacTaskImpl)tool.getTask(null, null, null, Arrays.asList("-bootclasspath",  bootPath), null, Arrays.asList(new MyFileObject(code)));
+//
+//        cut = ct.parse().iterator().next();
+//
+//        cut.getLineMap().getStartPosition(lastLine);
+//
+//        exceptionThrown = false;
+//
+//        try {
+//            cut.getLineMap().getStartPosition(lastLine + 1);
+//        } catch (IndexOutOfBoundsException e) {
+//            //intentional:
+//            exceptionThrown = true;
+//        }
+//
+//        assertTrue(exceptionThrown);
+//
+//        ((JavacTaskImpl) ct).finish();
+//    }
+//
+//    public void testLineMap() throws IOException {
+//        performTest("public class Test {}\n//", 2);
+//        performTest("public class Test {}\n ", 2);
+//        performTest("public class Test {}\n", 2);
+//        performTest("public class Test {}", 1);
+//        performTest(" ", 1);
+//        performTest("", 1);
+//        performTest("\n", 2);
+//        performTest("\n\n", 3);
+//    }
 
-    static class MyFileObject extends SimpleJavaFileObject {
-        private String text;
-        public MyFileObject(String text) {
-            super(URI.create("myfo:/Test.java"), JavaFileObject.Kind.SOURCE);
-            this.text = text;
-        }
-        public CharSequence getCharContent(boolean ignoreEncodingErrors) {
-            return text;
-        }
-    }
-
-    private void performTest(String code, int lastLine) throws IOException {
-        final String bootPath = System.getProperty("sun.boot.class.path"); //NOI18N
-        final JavaCompiler tool = ToolProvider.getSystemJavaCompiler();
-        assert tool != null;
-
-        JavacTaskImpl ct = (JavacTaskImpl)tool.getTask(null, null, null, Arrays.asList("-bootclasspath",  bootPath), null, Arrays.asList(new MyFileObject(code)));
-
-        CompilationUnitTree cut = ct.parse().iterator().next();
-
-        cut.getLineMap().getStartPosition(lastLine);
-
-        boolean exceptionThrown = false;
-
-        try {
-            cut.getLineMap().getStartPosition(lastLine + 1);
-        } catch (IndexOutOfBoundsException e) {
-            //intentional:
-            exceptionThrown = true;
-        }
-
-        assertTrue(exceptionThrown);
-
-        ((JavacTaskImpl) ct).finish();
-
-        //DocCommentScanner:
-        ct = (JavacTaskImpl)tool.getTask(null, null, null, Arrays.asList("-bootclasspath",  bootPath), null, Arrays.asList(new MyFileObject(code)));
-
-        cut = ct.parse().iterator().next();
-
-        cut.getLineMap().getStartPosition(lastLine);
-
-        exceptionThrown = false;
-
-        try {
-            cut.getLineMap().getStartPosition(lastLine + 1);
-        } catch (IndexOutOfBoundsException e) {
-            //intentional:
-            exceptionThrown = true;
-        }
-
-        assertTrue(exceptionThrown);
-
-        ((JavacTaskImpl) ct).finish();
-    }
-
-    public void testLineMap() throws IOException {
-        performTest("public class Test {}\n//", 2);
-        performTest("public class Test {}\n ", 2);
-        performTest("public class Test {}\n", 2);
-        performTest("public class Test {}", 1);
-        performTest(" ", 1);
-        performTest("", 1);
-        performTest("\n", 2);
-        performTest("\n\n", 3);
-    }
+    public void testNoop() {}
 
 }

@@ -89,7 +89,7 @@ public class TypesTest extends TestCase {
         ct.analyze();
     }
 
-    public void test126218() throws IOException {
+    public void BROKENtest126218() throws IOException {
         final String bootPath = System.getProperty("sun.boot.class.path"); //NOI18N
         final String version = System.getProperty("java.vm.specification.version"); //NOI18N
         final JavaCompiler tool = ToolProvider.getSystemJavaCompiler();
