@@ -7,9 +7,9 @@
     <import file="nbproject/build-impl.xml"/>
     <!--
 
-    There exist several targets which are by default empty and which can be 
-    used for execution of your tasks. These targets are usually executed 
-    before and after some main targets. They are: 
+    There exist several targets which are by default empty and which can be
+    used for execution of your tasks. These targets are usually executed
+    before and after some main targets. They are:
 
       -pre-init:                 called before initialization of project properties
       -post-init:                called after initialization of project properties
@@ -35,12 +35,12 @@
             </obfuscate>
         </target>
 
-    For list of available properties check the imported 
-    nbproject/build-impl.xml file. 
+    For list of available properties check the imported
+    nbproject/build-impl.xml file.
 
 
     Another way to customize the build is by overriding existing main targets.
-    The targets of interest are: 
+    The targets of interest are:
 
       -init-macrodef-javac:     defines macro for javac compilation
       -init-macrodef-junit:     defines macro for junit execution
@@ -48,7 +48,7 @@
       -init-macrodef-java:      defines macro for class execution
       -do-jar-with-manifest:    JAR building (if you are using a manifest)
       -do-jar-without-manifest: JAR building (if you are not using a manifest)
-      run:                      execution of project 
+      run:                      execution of project
       -javadoc-build:           Javadoc generation
       test-report:              JUnit report generation
 
@@ -60,20 +60,65 @@
             </exec>
         </target>
 
-    Notice that the overridden target depends on the jar target and not only on 
-    the compile target as the regular run target does. Again, for a list of available 
+    Notice that the overridden target depends on the jar target and not only on
+    the compile target as the regular run target does. Again, for a list of available
     properties which you can use, check the target you are overriding in the
-    nbproject/build-impl.xml file. 
+    nbproject/build-impl.xml file.
 
     -->
 
+    <target name="-pre-init">
+        <get dest="compiler.jar" skipexisting="true" src="https://repo1.maven.org/maven2/org/frgaal/compiler/15.0.0/compiler-15.0.0.jar"></get>
+    </target>
+
+    <target name="-init-macrodef-javac">
+        <macrodef name="javac" uri="http://www.netbeans.org/ns/j2se-project/3">
+            <attribute default="${src.src.dir}:${src.classes2.dir}:${src.classes3.dir}" name="srcdir"/>
+            <attribute default="${build.classes.dir}" name="destdir"/>
+            <attribute default="${javac.classpath}" name="classpath"/>
+            <attribute default="${javac.modulepath}" name="modulepath"/>
+            <attribute default="${javac.upgrademodulepath}" name="upgrademodulepath"/>
+            <attribute default="${javac.processorpath}" name="processorpath"/>
+            <attribute default="${build.generated.sources.dir}/ap-source-output" name="apgeneratedsrcdir"/>
+            <attribute default="${includes}" name="includes"/>
+            <attribute default="${excludes}" name="excludes"/>
+            <attribute default="${javac.debug}" name="debug"/>
+            <attribute default="${empty.dir}" name="sourcepath"/>
+            <attribute default="${empty.dir}" name="gensrcdir"/>
+            <element name="customize" optional="true"/>
+            <sequential>
+                <property location="${build.dir}/empty" name="empty.dir"/>
+                <mkdir dir="${empty.dir}"/>
+                <multirootfileset id="zdr" basedirs="src,../../../../src/java.compiler/share/classes,../../../../src/jdk.compiler/share/classes">
+                    <include name="**/*.java"/>
+                    <exclude name="**/module-info.java"/>
+                    <exclude name="com/sun/tools/javac/main/JavacToolProvider.java"/>
+                        <exclude name="com/sun/tools/sjavac/**"/>
+                </multirootfileset>
+                <pathconvert property="zdr" refid="zdr" pathsep=" "/>
+                <exec failonerror="true" executable="${java.home}/bin/java">
+                    <arg value="-jar"/>
+                    <arg value="compiler.jar"/>
+                    <arg line="${javac.compilerargs}"/>
+                    <arg value="-d"/>
+                    <arg value="@{destdir}"/>
+                    <arg value="--target"/>
+                    <arg value="1.8"/>
+                    <arg value="--source"/>
+                    <arg value="15"/>
+                    <arg line="${zdr}"/>
+                </exec>
+            </sequential>
+        </macrodef>
+    </target>
+
     <!-- suppress javadoc generation for this library, as its wrappers do it -->
     <target name="-javadoc-build"/>
-    
+
     <target name="-post-init">
         <available file="../../../../../nbbuild/netbeans/java/modules/ext" type="dir" property="modules.ext.exists"/>
     </target>
-    
+
     <target name="-separate-jars">
         <jar destfile="${dist.dir}/nb-javac-${nb-javac-ver}-api.jar">
             <fileset dir="${build.classes.dir}">
@@ -83,7 +128,7 @@
                 <include name="javax/tools/*"/>
                 <include name="jdk/internal/PreviewFeature*"/>
                 <include name="javax/annotation/**/*"/>
-				
+
             </fileset>
 			<fileset dir="${nb.javac.dir}">
 				<include name="README.md"/>
@@ -107,7 +152,7 @@
         </jar>
         <delete file="${dist.jar}"/>
     </target>
-    
+
     <target name="-copy-jars-to-build" if="modules.ext.exists">
         <copy file="${dist.dir}/nb-javac-${nb-javac-ver}-api.jar" tofile="../../../../../nbbuild/netbeans/java/modules/ext/nb-javac-api.jar" />
         <copy file="${dist.dir}/nb-javac-${nb-javac-ver}-impl.jar" tofile="../../../../../nbbuild/netbeans/java/modules/ext/nb-javac-impl.jar" />
@@ -137,7 +182,7 @@
 		<include name="make/langtools/tools/**"/>
 		<include name="make/langtools/build.xml"/>
 		<include name="make/langtools/build.properties"/>
-	
+
 	</zip>
     </target>
 </project>

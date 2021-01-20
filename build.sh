@@ -27,7 +27,6 @@ cp -r jdk/src/jdk.compiler src
 $JAVA_HOME14/bin/javac `find jdk/make/langtools/tools/propertiesparser/ -type f -name "*.java"`
 $JAVA_HOME14/bin/java -classpath jdk/make/langtools/tools/ propertiesparser.PropertiesParser -compile src/jdk.compiler/share/classes/com/sun/tools/javac/resources/compiler.properties src/jdk.compiler/share/classes/com/sun/tools/javac/resources/
 $JAVA_HOME14/bin/java -classpath jdk/make/langtools/tools/ propertiesparser.PropertiesParser -compile src/jdk.compiler/share/classes/com/sun/tools/javac/resources/launcher.properties src/jdk.compiler/share/classes/com/sun/tools/javac/resources/
-(cd src; patch -p1 -i ../temporary-patches/language-changes)
 $JAVA_HOME14/bin/java -classpath jackpot.jar org.netbeans.modules.jackpot30.cmdline.Main -hint-file make/langtools/netbeans/nb-javac/src/META-INF/upgrade/nbjavac.hint  -sourcepath make/langtools/netbeans/nb-javac/src/:src/jdk.compiler/share/classes/:src/java.compiler/share/classes --apply src/java.compiler/share/classes src/jdk.compiler/share/classes
 (cd src; patch -p1 -i ../temporary-patches/manual-workarounds)
 (cd src; patch -p1 -i ../temporary-patches/filesystems-run-on-jdk8)

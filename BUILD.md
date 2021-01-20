@@ -3,6 +3,12 @@ for the pruposes of NetBeans ("nb-javac").
 
 ### Steps to compile nb-javac:
 
+```bash
+JAVA_HOME8=/jdk-8/ JAVA_HOME14=/jdk-14/ ./build.sh
+```
+
+### Manual steps to compile nb-javac:
+
 1. from JDK 16 (https://github.com/openjdk/jdk16), ideally commit 58dca9253d3ec7bc5745d5b814b33e1b4b8b08e8, copy `src/java.compiler` and `src/jdk.compiler` into `src/java.compiler` and `src/jdk.compiler` in this project
 2. from a JDK 16 build, copy:
 `com/sun/tools/javac/resources/CompilerProperties.java`

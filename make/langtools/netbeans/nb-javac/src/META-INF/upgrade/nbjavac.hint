@@ -110,6 +110,11 @@ $1.stripLeading() :: $1 instanceof java.lang.String
 $1.replaceAll("^\\p{javaWhitespace}+", "")
 ;;
 
+$1.strip() :: $1 instanceof java.lang.String
+=>
+$1.replaceAll("^\\p{javaWhitespace}+", "").replaceAll("\\p{javaWhitespace}+$", "")
+;;
+
 $1.stripIndent() :: $1 instanceof java.lang.String
 =>
 nbjavac.StringWrapper.stripIndent($1)
