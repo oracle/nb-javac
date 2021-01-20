@@ -1,0 +1,155 @@
+/*
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the LICENSE file that accompanied this code.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
+ *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+ * or visit www.oracle.com if you need additional information or have any
+ * questions.
+ */
+
+java.util.Set.of($args$) => java.util.Collections.unmodifiableSet(new java.util.HashSet<>(java.util.Arrays.asList($args$)));;
+java.util.List.of($args$) => java.util.Collections.unmodifiableList(java.util.Arrays.asList($args$));;
+
+
+//XXX: incorrect!
+java.lang.Runtime.version().feature() =>
+"1.8".equals(System.getProperty("java.specification.version")) ? 8 : Integer.parseInt(System.getProperty("java.specification.version"))
+;;
+
+
+@jdk.internal.PreviewFeature($args$) => ;;
+@java.lang.Deprecated($arg1, $args$) => @java.lang.Deprecated;;
+
+
+$1.flip() :: $1 instanceof java.nio.ByteBuffer
+=>
+((ByteBuffer) $1.flip())
+;;
+
+$1.clear() :: $1 instanceof java.nio.ByteBuffer
+=>
+((ByteBuffer) $1.clear())
+;;
+
+$1.flip() :: $1 instanceof java.nio.CharBuffer && !parentMatches("$1.flip();")
+=>
+((CharBuffer) $1.flip())
+;;
+
+java.nio.file.Path.of($uri) :: $uri instanceof java.net.URI
+=>
+nbjavac.PathWrapper.of($uri)
+;;
+
+java.lang.module.ModuleDescriptor
+=>
+nbjavac.ModuleWrapper.ModuleDescriptor
+;;
+
+$class.getModule() :: $class instanceof java.lang.Class
+=>
+nbjavac.ModuleWrapper.getModule($class)
+;;
+
+$cl.getUnnamedModule() :: $cl instanceof java.lang.ClassLoader
+=>
+nbjavac.ModuleWrapper.getUnnamedModule($cl)
+;;
+
+java.lang.Module => nbjavac.ModuleWrapper;;
+
+java.lang.module.ModuleFinder => nbjavac.ModuleWrapper.ModuleFinder;;
+java.lang.ModuleLayer => nbjavac.ModuleWrapper.ModuleLayer;;
+java.lang.module.Configuration => nbjavac.ModuleWrapper.Configuration;;
+
+java.util.ServiceLoader.load($layer, $class) :: $layer instanceof java.lang.ModuleLayer && $class instanceof java.lang.Class
+=>
+nbjavac.ServiceLoaderWrapper.load($layer, $class)
+;;
+
+jdk.internal.jmod.JmodFile => nbjavac.JmodFileWrapper;;
+
+$1.isEmpty() :: $1 instanceof java.util.Optional
+=>
+!$1.isPresent()
+;;
+
+java.util.Objects.requireNonNullElse($obj, $def)
+=>
+nbjavac.ObjectsWrapper.requireNonNullElse($obj, $def)
+;;
+
+java.util.ServiceLoader :: inClass("com.sun.tools.doclint.DocLint")
+=>
+nbjavac.ServiceLoaderWrapper
+;;
+
+$1.stripTrailing() :: $1 instanceof java.lang.String
+=>
+$1.replaceAll("\\p{javaWhitespace}+$", "")
+;;
+
+$1.stripLeading() :: $1 instanceof java.lang.String
+=>
+$1.replaceAll("^\\p{javaWhitespace}+", "")
+;;
+
+$1.stripIndent() :: $1 instanceof java.lang.String
+=>
+nbjavac.StringWrapper.stripIndent($1)
+;;
+
+$1.translateEscapes() :: $1 instanceof java.lang.String
+=>
+nbjavac.StringWrapper.translateEscapes($1)
+;;
+
+$1.isBlank() :: $1 instanceof java.lang.String
+=>
+nbjavac.StringWrapper.isBlank($1)
+;;
+
+jdk.internal.misc.VM => nbjavac.VMWrapper;;
+
+//TODO: workaround for the NetBeans' approach to javac loading using two different ClassLoaders:
+public static com.sun.source.util.JavacTask instance(javax.annotation.processing.ProcessingEnvironment processingEnvironment) {$whatever$;}
+=>
+public static com.sun.source.util.JavacTask instance(javax.annotation.processing.ProcessingEnvironment processingEnvironment) {
+    if (!processingEnvironment.getClass().getName().equals(
+            "com.sun.tools.javac.processing.JavacProcessingEnvironment"))
+        throw new IllegalArgumentException();
+
+    try {
+        //Cannot refer to the implementation directly, needs to use reflection:
+        java.lang.reflect.Method m = processingEnvironment.getClass().getMethod("getJavacTask");
+
+        return (JavacTask) m.invoke(processingEnvironment);
+    } catch (NoSuchMethodException ex) {
+        throw new UnsupportedOperationException(ex);
+    } catch (SecurityException ex) {
+        throw new UnsupportedOperationException(ex);
+    } catch (IllegalAccessException ex) {
+        throw new UnsupportedOperationException(ex);
+    } catch (IllegalArgumentException ex) {
+        throw new UnsupportedOperationException(ex);
+    } catch (java.lang.reflect.InvocationTargetException ex) {
+        throw new UnsupportedOperationException(ex);
+    }
+}
+;;

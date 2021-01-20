@@ -1,5 +1,8 @@
 /build/
 /dist/
+/jdk/
+/src/
+/jackpot.jar
 /.idea/
 /.vscode/
 nbproject/private/
@@ -16,3 +19,4 @@ NashornProfile.txt
 **/JTwork/**
 /make/langtools/netbeans/nb-javac/build/
 /make/langtools/netbeans/nb-javac/dist/
+/make/langtools/netbeans/nb-javac/nbproject/private/

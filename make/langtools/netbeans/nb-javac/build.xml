@@ -97,6 +97,7 @@
 		<include name="jdk/internal/shellsupport/**/*"/>
                 <include name="jdk/internal/PreviewFeature*"/>
                 <include name="java/lang/**/*"/>
+                <include name="nbjavac/**"/>
             </fileset>
 			<fileset dir="${nb.javac.dir}">
 				<include name="README.md"/>

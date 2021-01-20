@@ -1,0 +1,14 @@
+if ! [ -f $JDK_SOURCES/configure ]; then
+  echo Specify JDK_SOURCES environment variable!
+  exit 1
+fi
+
+if ! [ -f $JTREG_HOME/lib/jtreg.jar ]; then
+  echo Specify JTREG_HOME environment variable!
+  exit 1
+fi
+
+JAVA_HOME=`dirname $0`/build/test/jdk
+JTREG_WORK=`dirname $0`/build/test/jtreg/work
+JTREG_REPORT=`dirname $0`/build/test/jtreg/report
+time $JAVA_HOME/bin/java -jar $JTREG_HOME/lib/jtreg.jar -timeout:10 -jdk:$JAVA_HOME -agentvm -retain:all -ignore:quiet -verbose:summary,nopass -w $JTREG_WORK -r $JTREG_REPORT -xml:verify -concurrency:4 $JDK_SOURCES/test/langtools/tools/javac/
