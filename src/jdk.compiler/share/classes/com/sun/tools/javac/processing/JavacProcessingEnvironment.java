@@ -1469,9 +1469,9 @@ public class JavacProcessingEnvironment implements ProcessingEnvironment, Closea
      */
     public void close() {
         filer.close();
-        if (discoveredProcs != null) // Make calling close idempotent
-            discoveredProcs.close();
-        discoveredProcs = null;
+//        if (discoveredProcs != null) // Make calling close idempotent
+//            discoveredProcs.close();
+//        discoveredProcs = null;
     }
 
     private List<ClassSymbol> getTopLevelClasses(List<? extends JCCompilationUnit> units) {
