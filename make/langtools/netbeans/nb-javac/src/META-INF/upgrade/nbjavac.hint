@@ -158,3 +158,8 @@ public static com.sun.source.util.JavacTask instance(javax.annotation.processing
     }
 }
 ;;
+
+$1.resolve("jrt-fs.jar").toUri().toURL() :: $1 instanceof java.nio.file.Path
+=>
+$1.resolve("lib").resolve("jrt-fs.jar").toUri().toURL()
+;;
