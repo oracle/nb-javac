@@ -63,4 +63,8 @@ public class StringWrapperTest extends TestCase {
         }
     }
 
+    public void testSlashS() {
+        String space = StringWrapper.translateEscapes("\\s");
+        assertEquals(" ", space);
+    }
 }

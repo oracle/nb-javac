@@ -81,6 +81,9 @@ public class StringWrapper {
                     case 't':
                         ch = '\t';
                         break;
+                    case 's':
+                        ch = ' ';
+                        break;
                     case '\'':
                     case '\"':
                     case '\\':
