@@ -67,4 +67,10 @@ public class StringWrapperTest extends TestCase {
         String space = StringWrapper.translateEscapes("\\s");
         assertEquals(" ", space);
     }
+
+    public void testEscapes() {
+        String textBlock = "jst\u001E\u0009";
+        String output = StringWrapper.stripIndent(textBlock);
+        assertEquals("jst", output);
+    }
 }

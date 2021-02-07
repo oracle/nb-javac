@@ -43,9 +43,14 @@ public class StringWrapper {
             indent = Math.min(indent, lines[lines.length - 1].length());
         }
         int indentFin = indent;
-        return Arrays.stream(lines)
-                     .map(line -> line.substring(indentFin).replaceAll("\\s+$", ""))
-                     .collect(Collectors.joining("\n"));
+        return Arrays.stream(lines).map(line -> {
+                String l = line.substring(indentFin);
+                int at = l.length() - 1;
+                while (at >= 0 && Character.isWhitespace(l.charAt(at))) {
+                    at--;
+                }
+                return l.substring(0, at + 1);
+            }).collect(Collectors.joining("\n"));
     }
 
     public static boolean isBlank(String str) {
