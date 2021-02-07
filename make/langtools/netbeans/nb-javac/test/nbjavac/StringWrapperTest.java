@@ -73,4 +73,11 @@ public class StringWrapperTest extends TestCase {
         String output = StringWrapper.stripIndent(textBlock);
         assertEquals("jst", output);
     }
+
+    public void testNewLines() {
+        char NL = (char) 0x000A;
+        String input = "jst" + NL + NL + "";
+        String output = StringWrapper.stripIndent(input);
+        assertEquals("jst\n\n", output);
+    }
 }

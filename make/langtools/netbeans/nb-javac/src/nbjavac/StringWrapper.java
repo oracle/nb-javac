@@ -24,7 +24,9 @@
  */
 package nbjavac;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
@@ -32,7 +34,7 @@ public class StringWrapper {
 
     public static String stripIndent(String str) {
         //prototype only, needs testing and performance improvements:
-        String[] lines = str.split("\n");
+        String[] lines = lines(str);
         ToIntFunction<String> strIndent = s -> s.length() - s.replaceAll("^\\s*", "").length();
         int indent = Arrays.stream(lines)
                            .filter(l -> !isBlank(l))
@@ -124,4 +126,18 @@ public class StringWrapper {
             return new String(chars, 0, to);
         }
 
+    private static String[] lines(String txt) {
+        List<String> arr = new ArrayList<>();
+        int at = 0;
+        for (;;) {
+            int next = txt.indexOf('\n', at);
+            if (next == -1) {
+                arr.add(txt.substring(at));
+                break;
+            }
+            arr.add(txt.substring(at, next));
+            at = next + 1;
+        }
+        return arr.toArray(new String[0]);
+    }
 }
