@@ -87,4 +87,12 @@ public class StringWrapperTest extends TestCase {
         String output = StringWrapper.stripIndent(input);
         assertEquals("\njst", output);
     }
+
+    public void test0x15() {
+        char NL = (char) 0x000A;
+        String input = "" + NL + '\u0015';
+
+        String output = StringWrapper.stripIndent(input);
+        assertEquals("\n\u0015", output);
+    }
 }

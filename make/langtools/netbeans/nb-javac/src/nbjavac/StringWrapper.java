@@ -35,11 +35,13 @@ public class StringWrapper {
         //prototype only, needs testing and performance improvements:
         String[] lines = lines(str);
         int indent = Arrays.stream(lines)
-                           .filter(l -> !isBlank(l))
                            .mapToInt((s) -> {
                                 int at = 0;
                                 while (at < s.length() && Character.isWhitespace(s.charAt(at))) {
                                     at++;
+                                }
+                                if (at == s.length()) {
+                                    return Integer.MAX_VALUE;
                                 }
                                 return at;
                            }).min()
@@ -61,8 +63,12 @@ public class StringWrapper {
             }).collect(Collectors.joining("\n"));
     }
 
-    public static boolean isBlank(String str) {
-        return str.trim().isEmpty();
+    public static boolean isBlank(String s) {
+        int at = 0;
+        while (at < s.length() && Character.isWhitespace(s.charAt(at))) {
+            at++;
+        }
+        return at == s.length();
     }
 
     //copied from nb-javac:
