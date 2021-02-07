@@ -107,6 +107,7 @@
                     <arg value="-jar"/>
                     <arg value="compiler.jar"/>
                     <arg line="${javac.compilerargs}"/>
+                    <arg value="-g"/>
                     <arg value="-encoding"/>
                     <arg value="UTF-8"/>
                     <arg value="-cp"/>

@@ -33,6 +33,15 @@ java -Xbootclasspath/p:make/langtools/netbeans/nb-javac/dist/nb-javac-15-api.jar
 
 Note step 8 is optional and only needed for experiments on command line, while running on JDK 8 and compiling for JDK 9+. Not needed in NetBeans.
 
+### Debug test
+
+Use following command to debug a test:
+
+```bash
+$ JAVA_HOME=/jdk-8/ ant -f make/langtools/netbeans/nb-javac test \
+    -Dincludes=**/StringWrapperTest* \
+    -Drun.jvmargs=-agentlib:jdwp=transport=dt_socket,server=y,address=8000
+```
 
 TODO (incomplete):
 -automatic build (including CompilerProperties, etc.)

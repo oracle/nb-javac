@@ -80,4 +80,11 @@ public class StringWrapperTest extends TestCase {
         String output = StringWrapper.stripIndent(input);
         assertEquals("jst\n\n", output);
     }
+
+    public void testTabAtBegin() {
+        char NL = (char) 0x000A;
+        String input = NL + "\u0009jst";
+        String output = StringWrapper.stripIndent(input);
+        assertEquals("\njst", output);
+    }
 }
