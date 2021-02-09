@@ -24,18 +24,23 @@
  */
 package nbjavac;
 
+import java.lang.reflect.Method;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Set;
 
 public class ModuleWrapper {
+    private final Class<?> clazz;
+
+    private ModuleWrapper(Class<?> c) {
+        this.clazz = c;
+    }
 
     public static ModuleWrapper getModule(Class<?> clazz) {
-        return new ModuleWrapper();
+        return new ModuleWrapper(clazz);
     }
 
     public static ModuleWrapper getUnnamedModule(ClassLoader loader) {
-        return new ModuleWrapper();
+        return new ModuleWrapper(null);
     }
 
     public String getName() {
@@ -50,6 +55,28 @@ public class ModuleWrapper {
     }
 
     public <S> void addUses(Class<S> service) {
+        if (this.clazz != null) {
+            ensureUses(this.clazz, service);
+        }
+        ensureUses(service);
+    }
+
+    static void ensureUses(Class<?> clazz) {
+        // ServiceLoaderWrapper.class.getModule().addUses(aClass);
+        Class<?> thisClass = ServiceLoaderWrapper.class;
+        ensureUses(thisClass, clazz);
+    }
+
+    private static void ensureUses(Class<?> thisClass, Class<?> clazz) {
+        try {
+            final Class<?> Module = Class.forName("java.lang.Module");
+            final Method addUses = Module.getDeclaredMethod("addUses", Class.class);
+            final Method getModule = Class.class.getDeclaredMethod("getModule");
+            final Object thisClassModule = getModule.invoke(thisClass);
+            addUses.invoke(thisClassModule, clazz);
+        } catch (ReflectiveOperationException t) {
+            //ignore - might log?
+        }
     }
 
     public static class ModuleFinder {

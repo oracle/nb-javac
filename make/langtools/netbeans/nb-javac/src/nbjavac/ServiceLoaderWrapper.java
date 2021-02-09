@@ -39,28 +39,23 @@ public class ServiceLoaderWrapper<T> implements Iterable<T> {
     }
 
     public static <T> ServiceLoader<T> load(ModuleWrapper.ModuleLayer layer, Class<T> aClass) {
-        ensureUses(aClass);
+        ModuleWrapper.ensureUses(aClass);
         return ServiceLoader.load(aClass); //XXX
     }
 
     public static <T> ServiceLoaderWrapper<T> load(Class<T> aClass) {
-        ensureUses(aClass);
+        ModuleWrapper.ensureUses(aClass);
         return new ServiceLoaderWrapper<T>(ServiceLoader.load(aClass));
     }
 
     public static <T> ServiceLoaderWrapper<T> load(Class<T> aClass, ClassLoader classLoader) {
-        ensureUses(aClass);
+        ModuleWrapper.ensureUses(aClass);
         return new ServiceLoaderWrapper<T>(ServiceLoader.load(aClass, classLoader));
     }
 
-    private static void ensureUses(Class<?> clazz) {
-        try {
-//            ServiceLoaderWrapper.class.getModule().addUses(aClass);
-            Class<?> thisClass = ServiceLoaderWrapper.class;
-            Class.forName("java.lang.Module").getDeclaredMethod("addUses", Class.class).invoke(Class.class.getDeclaredMethod("getModule").invoke(thisClass), clazz);
-        } catch (Throwable t) {
-            //ignore - might log?
-        }
+    public static <T> ServiceLoader<T> loadWithClassLoader(Class<T> aClass, ClassLoader classLoader) {
+        ModuleWrapper.ensureUses(aClass);
+        return ServiceLoader.load(aClass, classLoader);
     }
 
     public Stream<Provider<T>> stream() {
