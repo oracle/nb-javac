@@ -67,6 +67,12 @@
 
     -->
 
+    <fail message="Please use JDK8 to build nb-javac!">
+        <condition>
+            <available classname="java.lang.Module"/>
+        </condition>
+    </fail>
+
     <!-- suppress javadoc generation for this library, as its wrappers do it -->
     <target name="-javadoc-build"/>
     
