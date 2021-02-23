@@ -1443,9 +1443,6 @@ public class JavacProcessingEnvironment implements ProcessingEnvironment, Closea
 	        } else {
 	            compiler.todo.clear();
 	        }
-
-	        // Free resources
-	        this.close();
         } catch (Throwable t) {
             rethrowAbort(t);
             LOGGER.log(Level.INFO, "Error while re-entering:", t);
