@@ -28,7 +28,7 @@ package com.sun.tools.javac.comp;
 import java.util.*;
 import java.util.function.Supplier;
 
-import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.NestingKind;
 import javax.tools.JavaFileManager;
 import javax.lang.model.element.ElementKind;
 
@@ -119,7 +119,7 @@ public class Check {
         names = Names.instance(context);
         dfltTargetMeta = new Name[] { names.PACKAGE, names.TYPE,
             names.FIELD, names.RECORD_COMPONENT, names.METHOD, names.CONSTRUCTOR,
-            names.ANNOTATION_TYPE, names.LOCAL_VARIABLE, names.PARAMETER};
+            names.ANNOTATION_TYPE, names.LOCAL_VARIABLE, names.PARAMETER, names.MODULE };
         log = Log.instance(context);
         rs = Resolve.instance(context);
         syms = Symtab.instance(context);
@@ -158,10 +158,12 @@ public class Check {
                 enforceMandatoryWarnings, "sunapi", null);
 
         deferredLintHandler = DeferredLintHandler.instance(context);
-        allowRecords = (!preview.isPreview(Feature.RECORDS) || preview.isEnabled())
-                && Feature.RECORDS.allowedInSource(source);
-        allowSealed = (!preview.isPreview(Feature.SEALED_CLASSES) || preview.isEnabled())
-                && Feature.SEALED_CLASSES.allowedInSource(source);
+
+
+        allowRecords = Feature.RECORDS.allowedInSource(source);
+        allowSealed = (!preview.isPreview(Feature.SEALED_CLASSES) || preview.isEnabled()) &&
+                Feature.SEALED_CLASSES.allowedInSource(source);
+
     }
 
     /** Character for synthetic names
@@ -1230,24 +1232,23 @@ public class Check {
                 implicit |= sym.owner.flags_field & STRICTFP;
             break;
         case TYP:
+
         case ERR:
-            if (sym.isLocal()) {
+            if (sym.isDirectlyOrIndirectlyLocal()) {
+
                 boolean implicitlyStatic = !sym.isAnonymous() &&
                         ((flags & RECORD) != 0 || (flags & ENUM) != 0 || (flags & INTERFACE) != 0);
                 boolean staticOrImplicitlyStatic = (flags & STATIC) != 0 || implicitlyStatic;
-                mask = staticOrImplicitlyStatic && allowRecords ? StaticLocalFlags : LocalClassFlags;
+                // local statics are allowed only if records are allowed too
+                mask = staticOrImplicitlyStatic && allowRecords && (flags & ANNOTATION) == 0 ? StaticLocalFlags : LocalClassFlags;
                 implicit = implicitlyStatic ? STATIC : implicit;
-                if (staticOrImplicitlyStatic) {
-                    if (sym.owner.kind == TYP) {
-                        log.error(pos, Errors.StaticDeclarationNotAllowedInInnerClasses);
-                    }
-                }
             } else if (sym.owner.kind == TYP) {
-                mask = (flags & RECORD) != 0 ? MemberRecordFlags : ExtendedMemberClassFlags;
+                // statics in inner classes are allowed only if records are allowed too
+                mask = ((flags & STATIC) != 0) && allowRecords && (flags & ANNOTATION) == 0 ? ExtendedMemberStaticClassFlags : ExtendedMemberClassFlags;
                 if (sym.owner.owner.kind == PCK ||
-                    (sym.owner.flags_field & STATIC) != 0)
+                    (sym.owner.flags_field & STATIC) != 0) {
                     mask |= STATIC;
-                else if ((flags & ENUM) != 0 || (flags & RECORD) != 0) {
+                } else if (!allowRecords && ((flags & ENUM) != 0 || (flags & RECORD) != 0)) {
                     log.error(pos, Errors.StaticDeclarationNotAllowedInInnerClasses);
                 }
                 // Nested interfaces and enums are always STATIC (Spec ???)
@@ -1316,6 +1317,13 @@ public class Check {
                                         if (checkDisjoint(pos, flags,
                                                 SEALED,
                                                 FINAL | NON_SEALED)) {
+							if(checkDisjoint(pos, flags,
+				                                SEALED,
+				                                ANNOTATION)){
+			                            }else{
+			                                flags &= ~ANNOTATION;
+			                            }
+
 
                                         } else {
                                             flags &= ~(FINAL | NON_SEALED);
@@ -2803,7 +2811,7 @@ public class Check {
 
             if (sym.kind == VAR) {
                 if ((sym.flags() & PARAMETER) != 0 ||
-                    sym.isLocal() ||
+                    sym.isDirectlyOrIndirectlyLocal() ||
                     sym.name == names._this ||
                     sym.name == names._super) {
                     return;
@@ -2981,11 +2989,10 @@ public class Check {
      */
     private void validateAnnotation(JCAnnotation a, JCTree declarationTree, Symbol s) {
         validateAnnotationTree(a);
-        boolean isRecordMember = (s.flags_field & RECORD) != 0 || s.enclClass() != null && s.enclClass().isRecord();
+        boolean isRecordMember = ((s.flags_field & RECORD) != 0 || s.enclClass() != null && s.enclClass().isRecord());
 
-        boolean isRecordField = isRecordMember &&
-                (s.flags_field & (Flags.PRIVATE | Flags.FINAL | Flags.GENERATED_MEMBER | Flags.RECORD)) != 0 &&
-                declarationTree.hasTag(VARDEF) &&
+        boolean isRecordField = (s.flags_field & RECORD) != 0 &&
+                (declarationTree != null ? declarationTree.hasTag(VARDEF) : false) &&
                 s.owner.kind == TYP;
 
         if (isRecordField) {
@@ -3074,35 +3081,46 @@ public class Check {
 
         if (a.type.tsym.isAnnotationType()) {
             Optional<Set<Name>> applicableTargetsOp = getApplicableTargets(a, s);
+
             Set<Name> applicableTargets = applicableTargetsOp.get();
             boolean notApplicableOrIsTypeUseOnly = applicableTargets.isEmpty()
                     || applicableTargets.size() == 1 && applicableTargets.contains(names.TYPE_USE);
-            boolean isRecordMemberWithNonApplicableDeclAnno
-                    = isRecordMember && (s.flags_field & Flags.GENERATED_MEMBER) != 0 && notApplicableOrIsTypeUseOnly;
+             boolean isCompGeneratedRecordElement = isRecordMember && (s.flags_field & Flags.GENERATED_MEMBER) != 0;
+             boolean isCompRecordElementWithNonApplicableDeclAnno = isCompGeneratedRecordElement && notApplicableOrIsTypeUseOnly;
 
-            if (applicableTargets.isEmpty() || isRecordMemberWithNonApplicableDeclAnno) {
-                if (isRecordMemberWithNonApplicableDeclAnno) {
-                    /* so we have found an annotation that is not applicable to a record member that was generated by the
+                if (applicableTargets.isEmpty() || isCompRecordElementWithNonApplicableDeclAnno) {
+                    if (isCompRecordElementWithNonApplicableDeclAnno) {
+                            /* so we have found an annotation that is not applicable to a record member that was generated by the
+
                              * compiler. This was intentionally done at TypeEnter, now is the moment strip away the annotations
                              * that are not applicable to the given record member
                      */
-                    JCModifiers modifiers = TreeInfo.getModifiers(declarationTree);
-                    /* lets first remove the annotation from the modifier if it is not applicable, we have to check again as
+                           if (declarationTree != null) {
+                            JCModifiers modifiers = TreeInfo.getModifiers(declarationTree);
+                            /* lets first remove the annotation from the modifier if it is not applicable, we have to check again as
                              * it could be a type annotation
-                     */
-                    if (modifiers != null && applicableTargets.isEmpty()) {
-                        ListBuffer<JCAnnotation> newAnnotations = new ListBuffer<>();
-                        for (JCAnnotation anno : modifiers.annotations) {
-                            if (anno != a) {
-                                newAnnotations.add(anno);
+                             */
+                            if (modifiers != null && applicableTargets.isEmpty()) {
+                                ListBuffer<JCAnnotation> newAnnotations = new ListBuffer<>();
+                                for (JCAnnotation anno : modifiers.annotations) {
+                                    if (anno != a) {
+                                        newAnnotations.add(anno);
+                                    }
+                                }
+                                modifiers.annotations = newAnnotations.toList();
                             }
                         }
-                        modifiers.annotations = newAnnotations.toList();
-                    }
                     // now lets remove it from the symbol
                     s.getMetadata().removeDeclarationMetadata(a.attribute);
                 } else {
                     log.error(a.pos(), Errors.AnnotationTypeNotApplicable);
+                }
+                /* if we are seeing the @SafeVarargs annotation applied to a compiler generated accessor,
+                 * then this is an error as we know that no compiler generated accessor will be a varargs
+                 * method, better to fail asap
+                 */
+                if (isCompGeneratedRecordElement && !isRecordField && a.type.tsym == syms.trustMeType.tsym && declarationTree.hasTag(METHODDEF)) {
+                    log.error(a.pos(), Errors.VarargsInvalidTrustmeAnno(syms.trustMeType.tsym, Fragments.VarargsTrustmeOnNonVarargsAccessor(s)));
                 }
             }
         }
@@ -3462,6 +3480,9 @@ public class Check {
             } else if (target == names.TYPE_PARAMETER) {
                 if (s.kind == TYP && s.type.hasTag(TYPEVAR))
                     applicableTargets.add(names.TYPE_PARAMETER);
+            } else if (target == names.MODULE) {
+                if (s.kind == MDL)
+                    applicableTargets.add(names.MODULE);
             } else
                 return Optional.empty(); // Unknown ElementType. This should be an error at declaration site,
                                          // assume applicable.
@@ -3590,7 +3611,8 @@ public class Check {
     void checkDeprecated(Supplier<DiagnosticPosition> pos, final Symbol other, final Symbol s) {
         if ( (s.isDeprecatedForRemoval()
                 || s.isDeprecated() && !other.isDeprecated())
-                && (s.outermostClass() != other.outermostClass() || s.outermostClass() == null)) {
+                && (s.outermostClass() != other.outermostClass() || s.outermostClass() == null)
+                && s.kind != Kind.PCK) {
             deferredLintHandler.report(() -> warnDeprecated(pos.get(), s));
         }
     }
@@ -3903,6 +3925,59 @@ public class Check {
             log.warning(pos,
                         Warnings.AuxiliaryClassAccessedFromOutsideOfItsSourceFile(c, c.sourcefile));
         }
+    }
+
+    /**
+     * Check for a default constructor in an exported package.
+     */
+    void checkDefaultConstructor(ClassSymbol c, DiagnosticPosition pos) {
+        if (lint.isEnabled(LintCategory.MISSING_EXPLICIT_CTOR) &&
+            ((c.flags() & (ENUM | RECORD)) == 0) &&
+            !c.isAnonymous() &&
+            ((c.flags() & (PUBLIC | PROTECTED)) != 0) &&
+            Feature.MODULES.allowedInSource(source)) {
+            NestingKind nestingKind = c.getNestingKind();
+            switch (nestingKind) {
+                case ANONYMOUS:
+                case LOCAL: return;
+                case TOP_LEVEL: break; // No additional checks needed
+                case MEMBER:{
+                    // For nested member classes, all the enclosing
+                    // classes must be public or protected.
+                    Symbol owner = c.owner;
+                    while (owner != null && owner.kind == TYP) {
+                        if ((owner.flags() & (PUBLIC | PROTECTED)) == 0)
+                            return;
+                        owner = owner.owner;
+                    }
+                }
+            }
+
+            // Only check classes in named packages exported by its module
+            PackageSymbol pkg = c.packge();
+            if (!pkg.isUnnamed()) {
+                ModuleSymbol modle = pkg.modle;
+                for (ExportsDirective exportDir : modle.exports) {
+                    // Report warning only if the containing
+                    // package is unconditionally exported
+                    if (exportDir.packge.equals(pkg)) {
+                        if (exportDir.modules == null || exportDir.modules.isEmpty()) {
+                            // Warning may be suppressed by
+                            // annotations; check again for being
+                            // enabled in the deferred context.
+                            deferredLintHandler.report(() -> {
+                                if (lint.isEnabled(LintCategory.MISSING_EXPLICIT_CTOR))
+                                   log.warning(LintCategory.MISSING_EXPLICIT_CTOR,
+                                               pos, Warnings.MissingExplicitCtor(c, pkg, modle));
+                                                       });
+                        } else {
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        return;
     }
 
     private class ConversionWarner extends Warner {

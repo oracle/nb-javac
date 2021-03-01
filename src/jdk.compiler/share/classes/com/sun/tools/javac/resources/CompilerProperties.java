@@ -753,7 +753,8 @@ public class CompilerProperties {
         
         /**
          * compiler.err.cant.inherit.from.sealed=\
-         *    class is not allowed to extend sealed class: {0}
+         *    class is not allowed to extend sealed class: {0} \
+         *    (as it is not listed in its 'permits' clause)
          */
         public static Error CantInheritFromSealed(Symbol arg0) {
             return new Error("compiler", "cant.inherit.from.sealed", arg0);
@@ -928,6 +929,22 @@ public class CompilerProperties {
          */
         public static Error ClassCantWrite(Symbol arg0, String arg1) {
             return new Error("compiler", "class.cant.write", arg0, arg1);
+        }
+        
+        /**
+         * compiler.err.class.in.module.cant.extend.sealed.in.diff.module=\
+         *    class {0} in module {1} cannot extend a sealed class in a different module
+         */
+        public static Error ClassInModuleCantExtendSealedInDiffModule(Symbol arg0, Symbol arg1) {
+            return new Error("compiler", "class.in.module.cant.extend.sealed.in.diff.module", arg0, arg1);
+        }
+        
+        /**
+         * compiler.err.class.in.unnamed.module.cant.extend.sealed.in.diff.package=\
+         *    class {0} in unnamed module cannot extend a sealed class in a different package
+         */
+        public static Error ClassInUnnamedModuleCantExtendSealedInDiffPackage(Symbol arg0) {
+            return new Error("compiler", "class.in.unnamed.module.cant.extend.sealed.in.diff.package", arg0);
         }
         
         /**
@@ -1527,9 +1544,11 @@ public class CompilerProperties {
         
         /**
          * compiler.err.first.statement.must.be.call.to.another.constructor=\
-         *    constructor is not canonical, so its first statement must invoke another constructor
+         *    constructor is not canonical, so its first statement must invoke another constructor of class {0}
          */
-        public static final Error FirstStatementMustBeCallToAnotherConstructor = new Error("compiler", "first.statement.must.be.call.to.another.constructor");
+        public static Error FirstStatementMustBeCallToAnotherConstructor(Symbol arg0) {
+            return new Error("compiler", "first.statement.must.be.call.to.another.constructor", arg0);
+        }
         
         /**
          * compiler.err.foreach.not.applicable.to.type=\
@@ -1681,12 +1700,6 @@ public class CompilerProperties {
          *    illegal forward reference
          */
         public static final Error IllegalForwardRef = new Error("compiler", "illegal.forward.ref");
-        
-        /**
-         * compiler.err.illegal.generic.type.for.instof=\
-         *    illegal generic type for instanceof
-         */
-        public static final Error IllegalGenericTypeForInstof = new Error("compiler", "illegal.generic.type.for.instof");
         
         /**
          * compiler.err.illegal.initializer.for.type=\
@@ -1882,6 +1895,14 @@ public class CompilerProperties {
          *    instance initializers not allowed in records
          */
         public static final Error InstanceInitializerNotAllowedInRecords = new Error("compiler", "instance.initializer.not.allowed.in.records");
+        
+        /**
+         * compiler.err.instanceof.pattern.no.subtype=\
+         *    pattern type {0} is a subtype of expression type {1}
+         */
+        public static Error InstanceofPatternNoSubtype(Type arg0, Type arg1) {
+            return new Error("compiler", "instanceof.pattern.no.subtype", arg0, arg1);
+        }
         
         /**
          * compiler.err.instanceof.reifiable.not.safe=\
@@ -2320,9 +2341,11 @@ public class CompilerProperties {
         
         /**
          * compiler.err.local.classes.cant.extend.sealed=\
-         *    local classes must not extend sealed classes
+         *    {0} classes must not extend sealed classes\
          */
-        public static final Error LocalClassesCantExtendSealed = new Error("compiler", "local.classes.cant.extend.sealed");
+        public static Error LocalClassesCantExtendSealed(Fragment arg0) {
+            return new Error("compiler", "local.classes.cant.extend.sealed", arg0);
+        }
         
         /**
          * compiler.err.local.enum=\
@@ -3044,14 +3067,6 @@ public class CompilerProperties {
         }
         
         /**
-         * compiler.err.pattern.binding.may.not.be.assigned=\
-         *    pattern binding {0} may not be assigned
-         */
-        public static Error PatternBindingMayNotBeAssigned(Symbol arg0) {
-            return new Error("compiler", "pattern.binding.may.not.be.assigned", arg0);
-        }
-        
-        /**
          * compiler.err.pkg.annotations.sb.in.package-info.java=\
          *    package annotations should be in file package-info.java
          */
@@ -3323,6 +3338,12 @@ public class CompilerProperties {
          *    record components cannot have modifiers
          */
         public static final Error RecordCantDeclareFieldModifiers = new Error("compiler", "record.cant.declare.field.modifiers");
+        
+        /**
+         * compiler.err.record.component.and.old.array.syntax=\
+         *    legacy array notation not allowed on record components
+         */
+        public static final Error RecordComponentAndOldArraySyntax = new Error("compiler", "record.component.and.old.array.syntax");
         
         /**
          * compiler.err.record.header.expected=\
@@ -3893,12 +3914,6 @@ public class CompilerProperties {
         }
         
         /**
-         * compiler.err.unsupported.cross.fp.lit=\
-         *    hexadecimal floating-point literals are not supported on this VM
-         */
-        public static final Error UnsupportedCrossFpLit = new Error("compiler", "unsupported.cross.fp.lit");
-        
-        /**
          * compiler.err.unsupported.encoding=\
          *    unsupported encoding: {0}
          */
@@ -4060,6 +4075,12 @@ public class CompilerProperties {
         }
         
         /**
+         * compiler.warn.attempt.to.synchronize.on.instance.of.value.based.class=\
+         *    attempt to synchronize on an instance of a value-based class
+         */
+        public static final Warning AttemptToSynchronizeOnInstanceOfValueBasedClass = new Warning("compiler", "attempt.to.synchronize.on.instance.of.value.based.class");
+        
+        /**
          * compiler.warn.auxiliary.class.accessed.from.outside.of.its.source.file=\
          *    auxiliary class {0} in {1} should not be accessed from outside its own source file
          */
@@ -4201,6 +4222,12 @@ public class CompilerProperties {
          *    division by zero
          */
         public static final Warning DivZero = new Warning("compiler", "div.zero");
+        
+        /**
+         * compiler.warn.doclint.not.available=\
+         *    No service provider for doclint is available
+         */
+        public static final Warning DoclintNotAvailable = new Warning("compiler", "doclint.not.available");
         
         /**
          * compiler.warn.empty.if=\
@@ -4430,6 +4457,14 @@ public class CompilerProperties {
          *    Redundant type arguments in method call.
          */
         public static final Warning MethodRedundantTypeargs = new Warning("compiler", "method.redundant.typeargs");
+        
+        /**
+         * compiler.warn.missing-explicit-ctor=\
+         *    class {0} in exported package {1} declares no explicit constructors, thereby exposing a default constructor to clients of module {2}
+         */
+        public static Warning MissingExplicitCtor(Symbol arg0, Symbol arg1, Symbol arg2) {
+            return new Warning("compiler", "missing-explicit-ctor", arg0, arg1, arg2);
+        }
         
         /**
          * compiler.warn.missing.SVUID=\
@@ -5240,6 +5275,15 @@ public class CompilerProperties {
         }
         
         /**
+         * compiler.note.method.ref.search.results.multi=\
+         *    {0} search results for {1}, with most specific {2}\n\
+         *    applicable candidates:
+         */
+        public static Note MethodRefSearchResultsMulti(Fragment arg0, String arg1, int arg2) {
+            return new Note("compiler", "method.ref.search.results.multi", arg0, arg1, arg2);
+        }
+        
+        /**
          * compiler.note.mref.stat=\
          *    Translating method reference\n\
          *    alternate metafactory = {0}\n\
@@ -5738,6 +5782,12 @@ public class CompilerProperties {
         }
         
         /**
+         * compiler.misc.anonymous=\
+         *    anonymous
+         */
+        public static final Fragment Anonymous = new Fragment("compiler", "anonymous");
+        
+        /**
          * compiler.misc.anonymous.class=\
          *    <anonymous {0}>
          */
@@ -5766,6 +5816,29 @@ public class CompilerProperties {
          */
         public static Fragment ApplicableMethodFound1(int arg0, Symbol arg1, Fragment arg2) {
             return new Fragment("compiler", "applicable.method.found.1", arg0, arg1, arg2);
+        }
+        
+        /**
+         * compiler.misc.applicable.method.found.2=\
+         */
+        public static Fragment ApplicableMethodFound2(int arg0, Fragment arg1, Symbol arg2) {
+            return new Fragment("compiler", "applicable.method.found.2", arg0, arg1, arg2);
+        }
+        
+        /**
+         * compiler.misc.applicable.method.found.3=\
+         *    ({3})
+         */
+        public static Fragment ApplicableMethodFound3(int arg0, Fragment arg1, Symbol arg2, JCDiagnostic arg3) {
+            return new Fragment("compiler", "applicable.method.found.3", arg0, arg1, arg2, arg3);
+        }
+        
+        /**
+         * compiler.misc.applicable.method.found.3=\
+         *    ({3})
+         */
+        public static Fragment ApplicableMethodFound3(int arg0, Fragment arg1, Symbol arg2, Fragment arg3) {
+            return new Fragment("compiler", "applicable.method.found.3", arg0, arg1, arg2, arg3);
         }
         
         /**
@@ -6089,6 +6162,12 @@ public class CompilerProperties {
          *    all your base class are belong to us
          */
         public static final Fragment BaseMembership = new Fragment("compiler", "base.membership");
+        
+        /**
+         * compiler.misc.bound=\
+         *    bound
+         */
+        public static final Fragment Bound = new Fragment("compiler", "bound");
         
         /**
          * compiler.misc.canonical=\
@@ -7399,6 +7478,12 @@ public class CompilerProperties {
         public static final Fragment Lambda = new Fragment("compiler", "lambda");
         
         /**
+         * compiler.misc.local=\
+         *    local
+         */
+        public static final Fragment Local = new Fragment("compiler", "local");
+        
+        /**
          * compiler.misc.local.array.missing.target=\
          *    array initializer needs an explicit target-type
          */
@@ -7503,6 +7588,14 @@ public class CompilerProperties {
         public static final Fragment MalformedVarargMethod = new Fragment("compiler", "malformed.vararg.method");
         
         /**
+         * compiler.misc.method.descriptor.invalid=\
+         *    method descriptor invalid for {0}
+         */
+        public static Fragment MethodDescriptorInvalid(Name arg0) {
+            return new Fragment("compiler", "method.descriptor.invalid", arg0);
+        }
+        
+        /**
          * compiler.misc.method.must.be.public=\
          *    accessor method must be public
          */
@@ -7515,6 +7608,12 @@ public class CompilerProperties {
         public static Fragment MissingRetVal(Type arg0) {
             return new Fragment("compiler", "missing.ret.val", arg0);
         }
+        
+        /**
+         * compiler.misc.module.info.definition.expected=\
+         *    module-info definition expected
+         */
+        public static final Fragment ModuleInfoDefinitionExpected = new Fragment("compiler", "module.info.definition.expected");
         
         /**
          * compiler.misc.module.info.invalid.super.class=\
@@ -7611,6 +7710,12 @@ public class CompilerProperties {
         public static Fragment NoUniqueMinimalInstanceExists(Type arg0, List<? extends Type> arg1) {
             return new Fragment("compiler", "no.unique.minimal.instance.exists", arg0, arg1);
         }
+        
+        /**
+         * compiler.misc.non.static=\
+         *    non-static
+         */
+        public static final Fragment NonStatic = new Fragment("compiler", "non.static");
         
         /**
          * compiler.misc.not.a.functional.intf=\
@@ -7889,6 +7994,12 @@ public class CompilerProperties {
         public static final Fragment StatExprExpected = new Fragment("compiler", "stat.expr.expected");
         
         /**
+         * compiler.misc.static=\
+         *    static
+         */
+        public static final Fragment Static = new Fragment("compiler", "static");
+        
+        /**
          * compiler.misc.static.mref.with.targs=\
          *    parameterized qualifier on static method reference
          */
@@ -8073,6 +8184,12 @@ public class CompilerProperties {
         public static final Fragment UnableToAccessFile = new Fragment("compiler", "unable.to.access.file");
         
         /**
+         * compiler.misc.unbound=\
+         *    unbound
+         */
+        public static final Fragment Unbound = new Fragment("compiler", "unbound");
+        
+        /**
          * compiler.misc.unchecked.assign=\
          *    unchecked conversion
          */
@@ -8113,6 +8230,12 @@ public class CompilerProperties {
          *    undeclared type variable: {0}
          */
         public static final Fragment UndeclTypeVar = new Fragment("compiler", "undecl.type.var");
+        
+        /**
+         * compiler.misc.unexpected.const.pool.tag.at=\
+         *    unexpected constant pool tag: {0} at {1}
+         */
+        public static final Fragment UnexpectedConstPoolTagAt = new Fragment("compiler", "unexpected.const.pool.tag.at");
         
         /**
          * compiler.misc.unexpected.ret.val=\
@@ -8202,6 +8325,14 @@ public class CompilerProperties {
          */
         public static Fragment VarargsOverride(Symbol arg0, Symbol arg1, Symbol arg2, Symbol arg3) {
             return new Fragment("compiler", "varargs.override", arg0, arg1, arg2, arg3);
+        }
+        
+        /**
+         * compiler.misc.varargs.trustme.on.non.varargs.accessor=\
+         *    Accessor {0} is not a varargs method.
+         */
+        public static Fragment VarargsTrustmeOnNonVarargsAccessor(Symbol arg0) {
+            return new Fragment("compiler", "varargs.trustme.on.non.varargs.accessor", arg0);
         }
         
         /**

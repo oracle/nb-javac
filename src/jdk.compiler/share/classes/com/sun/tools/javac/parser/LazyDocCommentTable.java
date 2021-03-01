@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1999, 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -35,7 +35,6 @@ import com.sun.tools.javac.tree.EndPosTable;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.DiagnosticSource;
 
-
 /**
  *
  *  <p><b>This is NOT part of any supported API.
@@ -53,11 +52,13 @@ public class LazyDocCommentTable implements DocCommentTable {
         }
     }
 
-    ParserFactory fac;
+
+    private final ParserFactory fac;
     private final boolean breakOnError;
     private final EndPosTable ept;
-    DiagnosticSource diagSource;
+    private final DiagnosticSource diagSource;
     public Map<JCTree, Entry> table;
+
 
     LazyDocCommentTable(ParserFactory fac, EndPosTable ept) {
         this.fac = fac;
@@ -67,20 +68,24 @@ public class LazyDocCommentTable implements DocCommentTable {
         table = new HashMap<>();
     }
 
+    @Override
     public boolean hasComment(JCTree tree) {
         return table.containsKey(tree);
     }
 
+    @Override
     public Comment getComment(JCTree tree) {
         Entry e = table.get(tree);
         return (e == null) ? null : e.comment;
     }
 
+    @Override
     public String getCommentText(JCTree tree) {
         Comment c = getComment(tree);
         return (c == null) ? null : c.getText();
     }
 
+    @Override
     public DCDocComment getCommentTree(JCTree tree) {
         Entry e = table.get(tree);
         if (e == null)
@@ -90,6 +95,7 @@ public class LazyDocCommentTable implements DocCommentTable {
         return e.tree;
     }
 
+    @Override
     public void putComment(JCTree tree, Comment c) {
         table.put(tree, new Entry(c));
     }

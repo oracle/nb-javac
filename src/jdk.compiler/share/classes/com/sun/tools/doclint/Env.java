@@ -151,44 +151,46 @@ public class Env {
         java_lang_Void = elements.getTypeElement("java.lang.Void").asType();
     }
 
-    void setCustomTags(String cTags) {
-        customTags = new LinkedHashSet<>();
-        for (String s : cTags.split(DocLint.SEPARATOR)) {
-            if (!s.isEmpty())
-                customTags.add(s);
-        }
-    }
+    //earlier commented for jdk16 merge
+//    void setCustomTags(String cTags) {
+//        customTags = new LinkedHashSet<>();
+//        for (String s : cTags.split(DocLint.SEPARATOR)) {
+//            if (!s.isEmpty())
+//                customTags.add(s);
+//        }
+//    }
 
-    void setCheckPackages(String packages) {
-        includePackages = new HashSet<>();
-        excludePackages = new HashSet<>();
-        for (String pack : packages.split(DocLint.SEPARATOR)) {
-            boolean excluded = false;
-            if (pack.startsWith("-")) {
-                pack = pack.substring(1);
-                excluded = true;
-            }
-            if (pack.isEmpty())
-                continue;
-            Pattern pattern = MatchingUtils.validImportStringToPattern(pack);
-            if (excluded) {
-                excludePackages.add(pattern);
-            } else {
-                includePackages.add(pattern);
-            }
-        }
-    }
-
-    static boolean validatePackages(String packages) {
-        for (String pack : packages.split(DocLint.SEPARATOR)) {
-            if (pack.startsWith("-")) {
-                pack = pack.substring(1);
-            }
-            if (!pack.isEmpty() && !MatchingUtils.isValidImportString(pack))
-                return false;
-        }
-        return true;
-    }
+    //earlier commented for jdk16 merge
+//    void setCheckPackages(String packages) {
+//        includePackages = new HashSet<>();
+//        excludePackages = new HashSet<>();
+//        for (String pack : packages.split(DocLint.SEPARATOR)) {
+//            boolean excluded = false;
+//            if (pack.startsWith("-")) {
+//                pack = pack.substring(1);
+//                excluded = true;
+//            }
+//            if (pack.isEmpty())
+//                continue;
+//            Pattern pattern = MatchingUtils.validImportStringToPattern(pack);
+//            if (excluded) {
+//                excludePackages.add(pattern);
+//            } else {
+//                includePackages.add(pattern);
+//            }
+//        }
+//    }
+//earlier commented for jdk16 merge
+//    static boolean validatePackages(String packages) {
+//        for (String pack : packages.split(DocLint.SEPARATOR)) {
+//            if (pack.startsWith("-")) {
+//                pack = pack.substring(1);
+//            }
+//            if (!pack.isEmpty() && !MatchingUtils.isValidImportString(pack))
+//                return false;
+//        }
+//        return true;
+//    }
 
     void setHtmlVersion(HtmlVersion version) {
         htmlVersion = version;
