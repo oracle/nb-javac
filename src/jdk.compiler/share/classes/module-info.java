@@ -83,7 +83,7 @@ module jdk.compiler {
     exports com.sun.tools.javac.api to
         jdk.javadoc,
         jdk.jshell,
-+		java.compiler;
+		java.compiler;
     exports com.sun.tools.javac.resources to
         jdk.jshell;
     exports com.sun.tools.javac.code to
@@ -128,8 +128,8 @@ module jdk.compiler {
     provides com.sun.tools.javac.platform.PlatformProvider with
         com.sun.tools.javac.platform.JDKPlatformProvider;
 
-    //provides javax.tools.JavaCompiler with
-        //com.sun.tools.javac.api.JavacTool;
+    provides javax.tools.JavaCompiler with
+        com.sun.tools.javac.api.JavacTool;
 
     provides javax.tools.Tool with
         com.sun.tools.javac.api.JavacTool;
