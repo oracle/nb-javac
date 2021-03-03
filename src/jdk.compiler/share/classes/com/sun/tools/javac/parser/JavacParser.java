@@ -3525,9 +3525,9 @@ public class JavacParser implements Parser {
             log.error(token.pos, Errors.VarargsAndOldArraySyntax);
         }
 
-        if (type != null) {
-            type = bracketsOpt(type);
-        }
+        //if (type != null) {
+            //type = bracketsOpt(type);
+        //}
 
         if (recordComponent && token.kind == LBRACKET) {
             log.error(token.pos, Errors.RecordComponentAndOldArraySyntax);
