@@ -17,3 +17,7 @@ NashornProfile.txt
 /make/langtools/netbeans/nb-javac/build/
 /make/langtools/netbeans/nb-javac/dist/
 /make/langtools/netbeans/nb-javac/nbproject/private/
+/make/langtools/netbeans/mavenized/nbjavacmavenized/mavenproject1/target/
+/make/langtools/netbeans/mavenized/mavenproject1/target/
+/make/langtools/netbeans/mavenized/nbjavacapi/target/
+/make/langtools/netbeans/mavenized/nbjavacimpl/target/
