@@ -66,13 +66,97 @@
     nbproject/build-impl.xml file.
 
     -->
+    
+    <property name="root" location="../../../.."/>
+    <property name="jdk.repo" location="${root}/jdk"/>
+    <property name="src.dir" location="${root}/src"/>
+    <property name="tools.dir" location="${root}/lib"/>
+    
+    <target name="-check-jdk.is.available">
+        <available property="jdk.is.available" file="${jdk.repo}"/>
+    </target>
 
+    <target name="-check-jackpot.has.been.applied">
+        <available property="jackpot.has.been.applied" file="${src.dir}/jackpot-done"/>
+    </target>
+
+    <target name="-checkout-jdk" depends="-init-project,-check-jdk.is.available" unless="jdk.is.available">
+        <exec failonerror="true" command="git" dir="${jdk.repo}/..">
+            <arg value="clone"/>
+            <arg value="--depth=1"/>
+            <arg value="--branch"/>
+            <arg value="${jdk.git.commit}"/>
+            <arg value="--single-branch"/>
+            <arg value="${jdk.git.url}"/>
+            <arg value="jdk"/>
+        </exec>
+    </target>
+    
     <target name="-pre-init">
         <mkdir dir="build/lib"/>
-        <get dest="compiler.jar" skipexisting="true" src="https://repo1.maven.org/maven2/org/frgaal/compiler/15.0.0/compiler-15.0.0.jar"></get>
+        <mkdir dir="${tools.dir}"/>
+        <get dest="${tools.dir}/jackpot.jar" skipexisting="true" src="https://repo1.maven.org/maven2/org/apache/netbeans/modules/jackpot30/tool/11.1/tool-11.1.jar"/>
+        <get dest="${tools.dir}/compiler.jar" skipexisting="true" src="https://repo1.maven.org/maven2/org/frgaal/compiler/15.0.0/compiler-15.0.0.jar"></get>
         <get dest="build/lib/junit-4.12.jar" skipexisting="true" src="https://repo1.maven.org/maven2/junit/junit/4.12/junit-4.12.jar"></get>
         <get dest="build/lib/hamcrest-core-1.3.jar" skipexisting="true" src="https://repo1.maven.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"></get>
     </target>
+
+    <target name="-post-init" depends="-checkout-jdk">
+        <available file="../../../../../nbbuild/netbeans/java/modules/ext" type="dir" property="modules.ext.exists"/>
+    </target>
+        
+    <target name="propertiesparser" depends="init">
+        <mkdir dir="${root}/lib/propertiesparser"/>
+        <javac destdir="${root}/lib/propertiesparser" source="1.8" target="1.8" debug="true" srcdir="${jdk.repo}/make/langtools/tools/">
+            <include name="propertiesparser/**/*.java"/>
+        </javac>
+        <path id="propertiesparser">
+            <pathelement location="${root}/lib/propertiesparser"/>
+            <pathelement location="${jdk.repo}/make/langtools/tools/"/>
+        </path>
+        <java failonerror="true" classpathref="propertiesparser" classname="propertiesparser.PropertiesParser">
+            <arg value="-compile"/>
+            <arg value="${jdk.repo}/src/jdk.compiler/share/classes/com/sun/tools/javac/resources/compiler.properties"/>
+            <arg value="${jdk.repo}/src/jdk.compiler/share/classes/com/sun/tools/javac/resources/"/>
+        </java>
+        <java failonerror="true" classpathref="propertiesparser" classname="propertiesparser.PropertiesParser">
+            <arg value="-compile"/>
+            <arg value="${jdk.repo}/src/jdk.compiler/share/classes/com/sun/tools/javac/resources/launcher.properties"/>
+            <arg value="${jdk.repo}/src/jdk.compiler/share/classes/com/sun/tools/javac/resources/"/>
+        </java>
+    </target>
+
+    <target name="-post-clean">
+        <delete dir="${src.dir}"/>
+    </target>
+        
+    <target name="jackpot" depends="init,-check-jackpot.has.been.applied" unless="jackpot.has.been.applied">
+        <delete dir="${src.dir}"/>
+        <mkdir dir="${src.dir}"/>
+        <copy todir="${src.dir}">
+            <fileset dir="${jdk.repo}/src/">
+                <include name="java.compiler/**"/>
+                <include name="jdk.compiler/**"/>
+            </fileset>
+        </copy>
+        <java fork="true" failonerror="true" classpath="${tools.dir}/jackpot.jar" classname="org.netbeans.modules.jackpot30.cmdline.Main">
+            <arg value="-hint-file"/>
+            <arg value="${root}/make/langtools/netbeans/nb-javac/src/META-INF/upgrade/nbjavac.hint"/>
+            <arg value="-sourcepath"/>
+            <arg value="${root}/make/langtools/netbeans/nb-javac/src/:${src.dir}/jdk.compiler/share/classes/:${src.dir}/java.compiler/share/classes"/>
+            <arg value="--apply"/>
+            <arg value="${src.dir}/java.compiler/share/classes"/>
+            <arg value="${src.dir}/jdk.compiler/share/classes"/>
+        </java>
+        <exec command="patch" dir="${root}/src">
+            <arg value="-p1"/>
+            <arg value="-i"/>
+            <arg value="${root}/temporary-patches/manual-workarounds"/>
+        </exec>
+        <echo file="${src.dir}/jackpot-done">Jackpot done!</echo>
+    </target>
+
+    <target name="-pre-compile" depends="propertiesparser,jackpot"/>
 
     <target name="-init-macrodef-javac">
         <macrodef name="javac" uri="http://www.netbeans.org/ns/j2se-project/3">
@@ -105,7 +189,7 @@
                 <pathconvert property="zdr.@{destdir}.list" refid="zdr.@{destdir}" pathsep=" "/>
                 <exec failonerror="true" executable="${java.home}/bin/java">
                     <arg value="-jar"/>
-                    <arg value="compiler.jar"/>
+                    <arg value="${tools.dir}/compiler.jar"/>
                     <arg line="${javac.compilerargs}"/>
                     <arg value="-g"/>
                     <arg value="-encoding"/>
@@ -126,10 +210,6 @@
 
     <!-- suppress javadoc generation for this library, as its wrappers do it -->
     <target name="-javadoc-build"/>
-
-    <target name="-post-init">
-        <available file="../../../../../nbbuild/netbeans/java/modules/ext" type="dir" property="modules.ext.exists"/>
-    </target>
 
     <target name="-separate-jars">
         <jar destfile="${dist.dir}/nb-javac-${nb-javac-ver}-api.jar">

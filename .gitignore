@@ -1,6 +1,7 @@
 /build/
 /dist/
 /jdk/
+/lib/
 /src/
 /jackpot.jar
 /.idea/

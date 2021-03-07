@@ -1,5 +1,9 @@
 # About nb-javac!
-"nb-javac" is a patched version of OpenJDK "javac", i.e., the Java compiler. This has long been part of NetBeans, providing a highly tuned Java compiler specifically for the Java editor i.e., parsing and lexing for features such as syntax coloring, code completion.
+"nb-javac" is backport of OpenJDK "javac", i.e., the Java compiler that
+takes sources from the latest JDK and backports them to run on JDK8.
+This has long been part of NetBeans, providing a highly tuned Java compiler
+specifically for the Java editor i.e., parsing and lexing for features
+such as syntax coloring, code completion. 
 
 # Prerequisite
   - Git
@@ -23,16 +27,21 @@ $ git checkout <release_tag_name>
 3. Run the below command to build nb-javac.
 
 ```bash
-$ ant -f ./make/langtools/netbeans/nb-javac clean jar
+$ JAVA_HOME=/jdk-14/ ant -f ./make/langtools/netbeans/nb-javac clean
+$ JAVA_HOME=/jdk-14/ ant -f ./make/langtools/netbeans/nb-javac jar
 ```
 
 Two jars namely `javac-api*.jar` and `javac-impl*.jar` are going to appear
-at location `./make/langtools/netbeans/nb-javac/dist/`
+at location `./make/langtools/netbeans/nb-javac/dist/`. It is also possible to
+sanity test the generated Javac on JDK8:
+```bash
+$ JAVA_HOME=/bin/jdk-8/ ant -f ./make/langtools/netbeans/nb-javac test
+```
 
 4. Run below command to zip the source code of nb-javac
 
 ```bash
-$ ant -f ./make/langtools/netbeans/nb-javac zip-nb-javac-sources
+$ JAVA_HOME=/jdk-14/ ant -f ./make/langtools/netbeans/nb-javac zip-nb-javac-sources
 ```
 
 # Publishing to maven central / OSSRH
@@ -45,13 +54,13 @@ $ ant -f ./make/langtools/netbeans/nb-javac zip-nb-javac-sources
 
 3. Run
    ```
-   ant -f ./make/langtools/netbeans/nb-javac publish-to-ossrh-snapshots -Dmaven.groupId=your.grp.id
+   JAVA_HOME=/jdk-14/ ant -f ./make/langtools/netbeans/nb-javac publish-to-ossrh-snapshots -Dmaven.groupId=your.grp.id
    ```
    to publish snapshot artifacts (https://oss.sonatype.org/content/repositories/snapshots/)
 
 4. Run
    ```
-   ant -f ./make/langtools/netbeans/nb-javac publish-to-maven-central -Dmaven.groupId=your.grp.id
+   JAVA_HOME=/jdk-14/ ant -f ./make/langtools/netbeans/nb-javac publish-to-maven-central -Dmaven.groupId=your.grp.id
    ```
    to stage the release, which will get promoted to maven central, after it has
    been manually released.
