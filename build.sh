@@ -21,9 +21,6 @@ if ! [ -f $JAVA_HOME14/jmods/java.base.jmod ]; then
   exit 2
 fi
 
-mkdir -p make/langtools/netbeans/nb-javac/nbproject/private/
-echo javac.compilerargs=-bootclasspath $JAVA_HOME8/jre/lib/rt.jar >make/langtools/netbeans/nb-javac/nbproject/private/private.properties
-
 export JAVA_HOME=$JAVA_HOME14
 ant $ANT_ARGS_EXTRA -f make/langtools/netbeans/nb-javac jar
 

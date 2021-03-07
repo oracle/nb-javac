@@ -2,7 +2,7 @@
 <!-- You may freely edit this file. See commented blocks below for -->
 <!-- some examples of how to customize the build. -->
 <!-- (If you delete it and reopen the project it will be recreated.) -->
-<project name="nb-javac" default="default" basedir=".">
+<project name="nb-javac" default="default" basedir="." xmlns:j2seproject3="http://www.netbeans.org/ns/j2se-project/3" >
     <description>Builds, tests, and runs the project nb-javac.</description>
     <import file="nbproject/build-impl.xml"/>
     <!--
@@ -81,7 +81,7 @@
     </target>
 
     <target name="-checkout-jdk" depends="-init-project,-check-jdk.is.available" unless="jdk.is.available">
-        <exec failonerror="true" command="git" dir="${jdk.repo}/..">
+        <exec failonerror="true" executable="git" dir="${jdk.repo}/..">
             <arg value="clone"/>
             <arg value="--depth=1"/>
             <arg value="--branch"/>
@@ -104,10 +104,10 @@
     <target name="-post-init" depends="-checkout-jdk">
         <available file="../../../../../nbbuild/netbeans/java/modules/ext" type="dir" property="modules.ext.exists"/>
     </target>
-        
+
     <target name="propertiesparser" depends="init">
         <mkdir dir="${root}/lib/propertiesparser"/>
-        <javac destdir="${root}/lib/propertiesparser" source="1.8" target="1.8" debug="true" srcdir="${jdk.repo}/make/langtools/tools/">
+        <javac destdir="${root}/lib/propertiesparser" source="1.8" target="1.8" release="8" debug="true" srcdir="${jdk.repo}/make/langtools/tools/">
             <include name="propertiesparser/**/*.java"/>
         </javac>
         <path id="propertiesparser">
@@ -148,7 +148,7 @@
             <arg value="${src.dir}/java.compiler/share/classes"/>
             <arg value="${src.dir}/jdk.compiler/share/classes"/>
         </java>
-        <exec command="patch" dir="${root}/src">
+        <exec executable="patch" dir="${root}/src">
             <arg value="-p1"/>
             <arg value="-i"/>
             <arg value="${root}/temporary-patches/manual-workarounds"/>
@@ -156,7 +156,19 @@
         <echo file="${src.dir}/jackpot-done">Jackpot done!</echo>
     </target>
 
-    <target name="-pre-compile" depends="propertiesparser,jackpot"/>
+    <target name="-pre-compile" depends="propertiesparser,jackpot">
+        <resources id="sun.reflect">
+            <javaresource name="sun/reflect/annotation/ExceptionProxy.class"/>
+            <javaresource name="sun/reflect/annotation/AnnotationParser.class"/>
+            <javaresource name="sun/reflect/annotation/AnnotationType.class"/>
+            <javaresource name="sun/reflect/annotation/EnumConstantNotPresentExceptionProxy.class"/>
+        </resources>
+
+        <mkdir dir="${tools.dir}/reflect"/>
+        <copy todir="${tools.dir}/reflect">
+            <resources refid="sun.reflect"/>
+        </copy>
+    </target>
 
     <target name="-init-macrodef-javac">
         <macrodef name="javac" uri="http://www.netbeans.org/ns/j2se-project/3">
@@ -195,7 +207,7 @@
                     <arg value="-encoding"/>
                     <arg value="UTF-8"/>
                     <arg value="-cp"/>
-                    <arg value="@{classpath}"/>
+                    <arg value="${tools.dir}/reflect:@{classpath}"/>
                     <arg value="-d"/>
                     <arg value="@{destdir}"/>
                     <arg value="--target"/>
