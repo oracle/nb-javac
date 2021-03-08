@@ -67,6 +67,14 @@
 
     -->
     
+    <fail message="This build requires Ant version 1.9.9 at least!">
+        <condition>
+            <not>
+                <antversion atleast="1.9.9" />
+            </not>
+        </condition>
+    </fail>
+
     <property name="root" location="../../../.."/>
     <property name="jdk.repo" location="${root}/jdk"/>
     <property name="src.dir" location="${root}/src"/>
