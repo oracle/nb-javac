@@ -1,5 +1,9 @@
 /build/
 /dist/
+/jdk/
+/lib/
+/src/
+/jackpot.jar
 /.idea/
 /.vscode/
 nbproject/private/
@@ -14,6 +18,7 @@ test/nashorn/lib
 NashornProfile.txt
 **/JTreport/**
 **/JTwork/**
+**/compiler.jar
 /make/langtools/netbeans/nb-javac/build/
 /make/langtools/netbeans/nb-javac/dist/
 /make/langtools/netbeans/nb-javac/nbproject/private/

@@ -1,0 +1,18 @@
+81c81,82
+<         jdk.javadoc;
+---
+>         jdk.javadoc,
+> 	java.compiler;
+107c108,109
+<         jdk.javadoc;
+---
+>         jdk.javadoc,
+> 	java.compiler;
+123,124c125,126
+<     provides java.util.spi.ToolProvider with
+<         com.sun.tools.javac.main.JavacToolProvider;
+---
+> //    provides java.util.spi.ToolProvider with
+> //        com.sun.tools.javac.main.JavacToolProvider;
+133a136
+> 

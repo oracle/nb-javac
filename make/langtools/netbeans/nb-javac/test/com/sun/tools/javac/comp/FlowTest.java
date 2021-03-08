@@ -91,80 +91,80 @@ public class FlowTest extends TestCase {
         ct.analyze();
     }
 
-    public void test153488a() throws IOException {
-        final String bootPath = System.getProperty("sun.boot.class.path"); //NOI18N
-        final String version = System.getProperty("java.vm.specification.version"); //NOI18N
-        final JavaCompiler tool = ToolProvider.getSystemJavaCompiler();
-        assert tool != null;
-
-        String code = "package test;\n" +
-                      "class Test{\n" +
-                      "    private final int x;" +
-                      "    Test() { x = 0; }" +
-                      "    class Inner { int foo() { return x; } }" +
-                      "}";
-
-        DiagnosticCollector<JavaFileObject> c = new DiagnosticCollector<JavaFileObject>();
-        final JavacTaskImpl ct = (JavacTaskImpl)tool.getTask(null, null, c, Arrays.asList("-bootclasspath",  bootPath, "-source", version, "-Xjcov"), null, Arrays.asList(new MyFileObject(code)));
-        CompilationUnitTree cut = ct.parse().iterator().next();
-        
-        ct.analyze();
-
-        assertEquals(c.getDiagnostics().toString(), 0, c.getDiagnostics().size());
-
-        ClassTree clazz = (ClassTree) ((ClassTree) cut.getTypeDecls().get(0)).getMembers().get(2);
-
-        Context context = ct.getContext();
-        Flow flow = Flow.instance(context);
-        TreeMaker make = TreeMaker.instance(context);
-        Log l = Log.instance(context);
-        l.startPartialReparse();
-        JavaFileObject prev = l.useSource(cut.getSourceFile());
-        try {
-            flow.reanalyzeMethod(make.forToplevel((JCCompilationUnit) cut), (JCClassDecl) clazz);
-        } finally {
-            l.useSource(prev);
-            l.endPartialReparse();
-        }        
-        assertEquals(c.getDiagnostics().toString(), 0, c.getDiagnostics().size());
-    }
-
-    public void test153488b() throws IOException {
-        final String bootPath = System.getProperty("sun.boot.class.path"); //NOI18N
-        final String version = System.getProperty("java.vm.specification.version"); //NOI18N
-        final JavaCompiler tool = ToolProvider.getSystemJavaCompiler();
-        assert tool != null;
-
-        String code = "package test;\n" +
-                      "class Test{\n" +
-                      "    Test() { }" +
-                      "    class Inner { final int y; int foo() { final int x; return x; } }" +
-                      "}";
-
-        DiagnosticCollector<JavaFileObject> c = new DiagnosticCollector<JavaFileObject>();
-        final JavacTaskImpl ct = (JavacTaskImpl)tool.getTask(null, null, c, Arrays.asList("-bootclasspath",  bootPath, "-source", version, "-Xjcov"), null, Arrays.asList(new MyFileObject(code)));
-        CompilationUnitTree cut = ct.parse().iterator().next();
-
-        ct.analyze();
-
-        assertEquals(c.getDiagnostics().toString(), 2, c.getDiagnostics().size());
-
-        ClassTree clazz = (ClassTree) ((ClassTree) cut.getTypeDecls().get(0)).getMembers().get(1);
-
-        Context context = ct.getContext();
-        Flow flow = Flow.instance(context);
-        TreeMaker make = TreeMaker.instance(context);
-        Log l = Log.instance(context);
-        l.startPartialReparse();
-        JavaFileObject prev = l.useSource(cut.getSourceFile());
-        try {
-            flow.reanalyzeMethod(make.forToplevel((JCCompilationUnit) cut), (JCClassDecl) clazz);
-        } finally {
-            l.useSource(prev);
-            l.endPartialReparse();
-        }
-        assertEquals(c.getDiagnostics().toString(), 4, c.getDiagnostics().size());
-    }
+//    public void test153488a() throws IOException {
+//        final String bootPath = System.getProperty("sun.boot.class.path"); //NOI18N
+//        final String version = System.getProperty("java.vm.specification.version"); //NOI18N
+//        final JavaCompiler tool = ToolProvider.getSystemJavaCompiler();
+//        assert tool != null;
+//
+//        String code = "package test;\n" +
+//                      "class Test{\n" +
+//                      "    private final int x;" +
+//                      "    Test() { x = 0; }" +
+//                      "    class Inner { int foo() { return x; } }" +
+//                      "}";
+//
+//        DiagnosticCollector<JavaFileObject> c = new DiagnosticCollector<JavaFileObject>();
+//        final JavacTaskImpl ct = (JavacTaskImpl)tool.getTask(null, null, c, Arrays.asList("-bootclasspath",  bootPath, "-source", version, "-Xjcov"), null, Arrays.asList(new MyFileObject(code)));
+//        CompilationUnitTree cut = ct.parse().iterator().next();
+//        
+//        ct.analyze();
+//
+//        assertEquals(c.getDiagnostics().toString(), 0, c.getDiagnostics().size());
+//
+//        ClassTree clazz = (ClassTree) ((ClassTree) cut.getTypeDecls().get(0)).getMembers().get(2);
+//
+//        Context context = ct.getContext();
+//        Flow flow = Flow.instance(context);
+//        TreeMaker make = TreeMaker.instance(context);
+//        Log l = Log.instance(context);
+//        l.startPartialReparse();
+//        JavaFileObject prev = l.useSource(cut.getSourceFile());
+//        try {
+//            flow.reanalyzeMethod(make.forToplevel((JCCompilationUnit) cut), (JCClassDecl) clazz);
+//        } finally {
+//            l.useSource(prev);
+//            l.endPartialReparse();
+//        }        
+//        assertEquals(c.getDiagnostics().toString(), 0, c.getDiagnostics().size());
+//    }
+//
+//    public void test153488b() throws IOException {
+//        final String bootPath = System.getProperty("sun.boot.class.path"); //NOI18N
+//        final String version = System.getProperty("java.vm.specification.version"); //NOI18N
+//        final JavaCompiler tool = ToolProvider.getSystemJavaCompiler();
+//        assert tool != null;
+//
+//        String code = "package test;\n" +
+//                      "class Test{\n" +
+//                      "    Test() { }" +
+//                      "    class Inner { final int y; int foo() { final int x; return x; } }" +
+//                      "}";
+//
+//        DiagnosticCollector<JavaFileObject> c = new DiagnosticCollector<JavaFileObject>();
+//        final JavacTaskImpl ct = (JavacTaskImpl)tool.getTask(null, null, c, Arrays.asList("-bootclasspath",  bootPath, "-source", version, "-Xjcov"), null, Arrays.asList(new MyFileObject(code)));
+//        CompilationUnitTree cut = ct.parse().iterator().next();
+//
+//        ct.analyze();
+//
+//        assertEquals(c.getDiagnostics().toString(), 2, c.getDiagnostics().size());
+//
+//        ClassTree clazz = (ClassTree) ((ClassTree) cut.getTypeDecls().get(0)).getMembers().get(1);
+//
+//        Context context = ct.getContext();
+//        Flow flow = Flow.instance(context);
+//        TreeMaker make = TreeMaker.instance(context);
+//        Log l = Log.instance(context);
+//        l.startPartialReparse();
+//        JavaFileObject prev = l.useSource(cut.getSourceFile());
+//        try {
+//            flow.reanalyzeMethod(make.forToplevel((JCCompilationUnit) cut), (JCClassDecl) clazz);
+//        } finally {
+//            l.useSource(prev);
+//            l.endPartialReparse();
+//        }
+//        assertEquals(c.getDiagnostics().toString(), 4, c.getDiagnostics().size());
+//    }
     
     public void test194658() throws IOException {
         final String bootPath = System.getProperty("sun.boot.class.path"); //NOI18N
