@@ -487,7 +487,8 @@ public class JavacTaskImpl extends BasicJavacTask {
         if (result.snd == null) {
             return result.fst;
         }
-        throw new IllegalStateException(result.snd);
+        //throw new IllegalStateException(result.snd);
+        return List.nil();
     }
 
     /**
