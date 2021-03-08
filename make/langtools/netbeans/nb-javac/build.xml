@@ -343,8 +343,8 @@
     <target name="publish-to-ossrh-snapshots"
             description="Build nb-javac and publish to Snapshot Repository of OSSRH"
             depends="-prepare-maven-snapshot-version,-prepare-maven">
-
-        <exec executable="mvn" output="build/maven-publish.log" failonerror="true">
+        <property name="mvn.exec.output" location="build/maven-publish.log"/>
+        <exec executable="mvn" output="${mvn.exec.output}" resultproperty="mvn.exec.result" failonerror="false">
             <arg value="org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file"/>
             <arg value="-Durl=${maven-snapshots-repository-url}"/>
             <arg value="-DrepositoryId=${maven-snapshots-repository-id}"/>
@@ -354,6 +354,13 @@
             <arg value="-Dtypes=jar,jar,jar" />
             <arg value="-Dclassifiers=api,sources,javadoc" />
         </exec>
+        <fail message="Publishing to Maven failed with exec code ${mvn.exec.result}, see log at ${mvn.exec.output}">
+            <condition>
+                <not>
+                    <equals arg1="0" arg2="${mvn.exec.result}"/>
+                </not>
+            </condition>
+        </fail>
     </target>
 
     <target name="publish-to-maven-central" 
