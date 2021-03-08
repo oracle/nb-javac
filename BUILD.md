@@ -1,53 +1,95 @@
-This projects shows a way to compile JDK 16+ javac to run on JDK 8+,
-for the pruposes of NetBeans ("nb-javac").
+# Hacking Guide for the automatically generated [nbjavac](README.md)
 
-### Steps to compile nb-javac:
+The idea of the new build system is to take the JDK 16+ `javac` sources and
+automatically convert them to run on JDK 8+. As a result the sources come 
+from real JDK repository. The `nbjavac` repository doesn't contain them. 
+This repository only contains the build scripts and
+description of [advanced refactorings](https://netbeans.apache.org/jackpot/HintsFileFormat.html).
+Use:
 
 ```bash
-JAVA_HOME8=/jdk-8/ JAVA_HOME14=/jdk-14/ ./build.sh
+$ JAVA_HOME=/jdk-14/ ant -f ./make/langtools/netbeans/nb-javac jar
 ```
 
-### Manual steps to compile nb-javac:
+to build everything at once. Read below to control individual steps of the build.
 
-1. from JDK 16 (https://github.com/openjdk/jdk16), ideally commit 58dca9253d3ec7bc5745d5b814b33e1b4b8b08e8, copy `src/java.compiler` and `src/jdk.compiler` into `src/java.compiler` and `src/jdk.compiler` in this project
-2. from a JDK 16 build, copy:
-`com/sun/tools/javac/resources/CompilerProperties.java`
-into:
-`jdk.compiler/share/classes/com/sun/tools/javac/resources/CompilerProperties.java`
-and:
-`com/sun/tools/javac/resources/LauncherProperties.java`
-into:
-`jdk.compiler/share/classes/com/sun/tools/javac/resources/LauncherProperties.java`
-3. apply `temporary-patches/language-changes` patch. This includes backport language changes,
-which should eventually also be done using NetBeans/Jackpot
-4. open the `make/langtools/netbeans/nb-javac` project in NetBeans. Neccessary setup (in Project Properties):
--in Libraries tab, set Java Platform to JDK 11+ (tested with JDK 16) (JDK 8 javac contains a bug that will prevent compilation of the sources)
--in Build/Compiling tab, make sure there is an "Additiona Compiler Options" entry specifying -bootclasspath from JDK 8 (i.e. rt.jar)
-5. open `src/META-INF/upgrades/nbjavac.hint`, invoke Run File, select the project Custom Scope. Do the refactoring. (There should be 102 replacements done.)
-6. apply temporary-patches/manual-workarounds to workaround a few mistakes in the transformation
-7. the project should now be buildable. Not tried in NetBeans yet.
-8. If you would want to test on the commandline, apply `filesystems-run-on-jdk8` and clean & build. Then it should be possible to run like:
+
+### Getting the JDK repository
+
+The build requires JDK repository in `jdk` subdirectory of the root of `nb-javac` repository.
+If such directory doesn't exist, the build checks out one:
+
 ```bash
-java -Xbootclasspath/p:make/langtools/netbeans/nb-javac/dist/nb-javac-15-api.jar:make/langtools/netbeans/nb-javac/dist/nb-javac-15-impl.jar com.sun.tools.javac.Main --system <path-to-JDK16> TextBlock.java
+$ JAVA_HOME=/jdk-14/ ant -f ./make/langtools/netbeans/nb-javac init \
+    -Djdk.git.url=https://github.com/openjdk/jdk16 \
+    -Djdk.git.commit=jdk-16+36
 ```
 
-Note step 8 is optional and only needed for experiments on command line, while running on JDK 8 and compiling for JDK 9+. Not needed in NetBeans.
+If the `jdk` directory is present the build leaves its content untouched. E.g.
+a developer may clone the `jdk` repository manually, switch its content to any other tag,
+make changes in the `jdk/src/java.compiler/` or `jdk/src/jdk.compiler/` directories,
+etc. Bugfixes, features and other changes to `javac` sources are supposed to be done 
+in the `jdk` subdirectory and integrated into the JDK's `javac` official repository.
 
-### Debug test
+One can discard any changes by `rm -rf jdk`. Then the subsequent build checks
+a fresh copy of the `jdk` repository from scratch. The default values for
+`jdk.git.url` and `jdk.git.commit` properties are in the
+`./make/langtools/netbeans/nb-javac/nbproject/project.properties`
+file.
 
-Use following command to debug a test:
+
+### Automatically processing the sources
+
+Once the JDK's `javac` sources are in the `jdk` subdirectory, it is necessary
+to apply [advanced refactorings](./make/langtools/netbeans/nb-javac/src/META-INF/upgrade/nbjavac.hint)
+to them. This is done by executing the [jackpot](https://netbeans.apache.org/jackpot/HintsFileFormat.html)
+target:
+
+```bash
+$ JAVA_HOME=/jdk-14/ ant -f ./make/langtools/netbeans/nb-javac jackpot
+```
+
+This step copies the `javac` sources from the `jdk` subdirectory into a sibling
+`src` subdirectory and applies necessary transformations to them.
+The goal of such transformations is to eliminate usage of JDK9+ APIs
+and replace them with JDK8 only APIs.
+
+The sources under the `src/java.compiler` and `src/jdk.compiler` shall not
+be edited manually. Rather than that edit the sources in the original
+`jdk/src/java.compiler/` and `jdk/src/jdk.compiler/` directories. To apply
+the refactorings again execute:
+
+```bash
+$ JAVA_HOME=/jdk-14/ ant -f ./make/langtools/netbeans/nb-javac clean jackpot
+```
+
+### The build
+
+As described in [general documentation](README.md) use the following command to
+generate the final JAR files:
+
+```bash
+$ JAVA_HOME=/jdk-14/ ant -f ./make/langtools/netbeans/nb-javac clean jar
+```
+
+JARs `nb-javac-*-api.jar` and `nb-javac-*-impl.jar` are going to appear
+at location `./make/langtools/netbeans/nb-javac/dist/`.
+
+### Debug & Develop 
+
+Open the `nb-javac` project in NetBeans IDE with
+
+```bash
+$ netbeans --open make/langtools/netbeans/nb-javac/
+```
+
+and you should be able to debug a test (for example `StringWrapperTest`) with following command line:
 
 ```bash
 $ JAVA_HOME=/jdk-8/ ant -f make/langtools/netbeans/nb-javac test \
     -Dincludes=**/StringWrapperTest* \
-    -Drun.jvmargs=-agentlib:jdwp=transport=dt_socket,server=y,address=8000
+    -Drun.jvmargs=-agentlib:jdwp=transport=dt_socket,server=y,address=5005,suspend=y
 ```
 
-TODO (incomplete):
--automatic build (including CompilerProperties, etc.)
--cleanup
--fix nbjavac wrappers
--fix Jackpot
--resolve language changes
--jdeps needed? (classfile library?)
--test - all javac, nb-javac and NetBeans (including updates)
+Connect the NetBeans IDE to port 5005 and step through the `nb-javac`
+generated code.

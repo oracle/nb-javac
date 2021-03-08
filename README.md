@@ -1,44 +1,49 @@
 # About nb-javac!
-"nb-javac" is backport of OpenJDK "javac", i.e., the Java compiler that
-takes sources from the latest JDK and backports them to run on JDK8.
-This has long been part of NetBeans, providing a highly tuned Java compiler
+_nb-javac_ is a backport of OpenJDK "javac", i.e., the Java compiler. _nbjavac_
+takes sources from the latest JDK and backports them to run on JDK8+.
+The _nb-javac_ has long been part of NetBeans, providing a highly tuned Java compiler
 specifically for the Java editor i.e., parsing and lexing for features
 such as syntax coloring, code completion. 
 
 # Prerequisite
   - Git
   - Ant 1.9.9 or above
-  - JDK 8 or above (to build nb-javac)
-  - Apache Maven
+  - JDK 14 to build
+  - JDK 8 to test
+  - Apache Maven to publish to Maven central
 
 # Building nb-javac jar files
-1. Obtain the code with the following command
+
+Detailed description of the [build process](BUILD.md) is available in a
+separate [development documentation](BUILD.md). Here are just
+the most straigtforward steps to get the final artifacts.
+
+### Obtain the code with the following command
 
 ```
 $ git clone https://github.com/oracle/nb-javac.git
 ```
 
-2. To get a specific version use the following command
+### Get a specific version use the following command
 
 ```bash
 $ git checkout <release_tag_name> 
 ```
 
-3. Run the below command to build nb-javac.
+### Run the below command to build nb-javac.
 
 ```bash
-$ JAVA_HOME=/jdk-14/ ant -f ./make/langtools/netbeans/nb-javac clean
-$ JAVA_HOME=/jdk-14/ ant -f ./make/langtools/netbeans/nb-javac jar
+$ JAVA_HOME=/jdk-14/ ant -f ./make/langtools/netbeans/nb-javac clean jar
 ```
 
-Two jars namely `javac-api*.jar` and `javac-impl*.jar` are going to appear
+Two jars namely `nb-javac-*-api.jar` and `nb-javac-*-impl.jar` are going to appear
 at location `./make/langtools/netbeans/nb-javac/dist/`. It is also possible to
 sanity test the generated Javac on JDK8:
 ```bash
-$ JAVA_HOME=/bin/jdk-8/ ant -f ./make/langtools/netbeans/nb-javac test
+$ JAVA_HOME=/jdk-8/ ant -f ./make/langtools/netbeans/nb-javac test
 ```
 
-4. Run below command to zip the source code of nb-javac
+### Generate ZIP with the source code of nb-javac
 
 ```bash
 $ JAVA_HOME=/jdk-14/ ant -f ./make/langtools/netbeans/nb-javac zip-nb-javac-sources
