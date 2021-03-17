@@ -1184,9 +1184,9 @@ public class JavaTokenizer extends UnicodeReader {
             int endPos = position();
 
             if (tk.tag == Token.Tag.DEFAULT) {
-                return new Token(tk, pos, endPos, comments);
+                return new Token(tk, seek + pos, seek + endPos, comments);
             } else  if (tk.tag == Token.Tag.NAMED) {
-                return new NamedToken(tk, pos, endPos, name, comments);
+                return new NamedToken(tk, seek + pos, seek + endPos, name, comments);
             } else {
                 // Get characters from string buffer.
                 String string = sb.toString();
@@ -1226,10 +1226,10 @@ public class JavaTokenizer extends UnicodeReader {
 
                 if (tk.tag == Token.Tag.STRING) {
                     // Build string token.
-                    return new StringToken(tk, pos, endPos, string, comments);
+                    return new StringToken(tk, seek + pos, seek + endPos, string, comments);
                 } else {
                     // Build numeric token.
-                    return new NumericToken(tk, pos, endPos, string, radix, comments);
+                    return new NumericToken(tk, seek + pos, seek + endPos, string, radix, comments);
                 }
 
             }
