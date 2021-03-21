@@ -12,6 +12,9 @@ jobs:
     steps: 
       - 
         uses: actions/checkout@v2
+        with:
+        java-version: '1.8.0.261'
+        java-package: jdk
       - 
         name: "Build nb-javac"
         run: "ant -f ./make/langtools/netbeans/nb-javac clean jar"
@@ -26,6 +29,9 @@ jobs:
       - 
         name: Checkout
         uses: actions/checkout@v2
+        with:
+        java-version: '1.8.0.261'
+        java-package: jdk
       - 
         name: "Build nb-javac"
         run: "ant -f ./make/langtools/netbeans/nb-javac clean jar"  
@@ -40,6 +46,9 @@ jobs:
       - 
         name: Checkout
         uses: actions/checkout@v2
+        with:
+        java-version: '1.8.0.261'
+        java-package: jdk
       - 
         name: "Build nb-javac"
         run: "ant -f ./make/langtools/netbeans/nb-javac clean jar"
