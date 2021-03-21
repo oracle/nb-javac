@@ -168,3 +168,19 @@ $1.resolve("jrt-fs.jar").toUri().toURL() :: $1 instanceof java.nio.file.Path
 =>
 $1.resolve("lib").resolve("jrt-fs.jar").toUri().toURL()
 ;;
+
+
+javax.tools.ToolProvider.getSystemTool($class, $module, $name)
+=>
+$class.cast(((java.util.function.Supplier<Object>) () -> {
+    try {
+       Object v = javax.tools.ToolProvider.getSystemTool($class, $module, $name);
+       if (v == null) {
+           v = Class.forName($name).newInstance();
+       }
+       return $class.cast(v);
+    } catch (Throwable t) {
+        throw new Error(t);
+    }
+}).get())
+;;
