@@ -74,7 +74,7 @@ public class ModuleWrapper {
             final Method getModule = Class.class.getDeclaredMethod("getModule");
             final Object thisClassModule = getModule.invoke(thisClass);
             addUses.invoke(thisClassModule, clazz);
-        } catch (ReflectiveOperationException t) {
+        } catch (SecurityException | ReflectiveOperationException t) {
             //ignore - might log?
         }
     }
