@@ -568,6 +568,7 @@ public class JavaTokenizer extends UnicodeReader {
             // While characters are available.
             while (isAvailable()) {
                 if (accept("\"\"\"")) {
+                    tk = Tokens.TokenKind.STRINGLITERAL;
                     return;
                 }
 
