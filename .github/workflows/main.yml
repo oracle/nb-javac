@@ -13,12 +13,6 @@ jobs:
       - 
         uses: actions/checkout@v2
       - 
-         name: Setup Java 8
-         id: setup-java
-         uses: ./
-         with:
-            java-version: 8.0.261
-      - 
         name: "Build nb-javac"
         run: "ant -f ./make/langtools/netbeans/nb-javac clean jar"
       -  
@@ -46,12 +40,6 @@ jobs:
       - 
         name: Checkout
         uses: actions/checkout@v2
-      - 
-         name: Setup Java 8
-         id: setup-java
-         uses: ./
-         with:
-            java-version: 8.0.261
       - 
         name: "Build nb-javac"
         run: "ant -f ./make/langtools/netbeans/nb-javac clean jar"
