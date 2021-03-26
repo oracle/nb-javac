@@ -550,6 +550,30 @@ public class TypeEnter implements Completer {
             super(phaseName, next);
         }
 
+
+        protected Env<AttrContext> baseEnv(JCClassDecl tree, Env<AttrContext> env) {
+            WriteableScope baseScope = WriteableScope.create(tree.sym);
+            //import already entered local classes into base scope
+            for (Symbol sym : env.outer.info.scope.getSymbols(NON_RECURSIVE)) {
+                if (sym.isDirectlyOrIndirectlyLocal()) {
+                    baseScope.enter(sym);
+                }
+            }
+            //import current type-parameters into base scope
+            if (tree.typarams != null)
+                for (List<JCTypeParameter> typarams = tree.typarams;
+                     typarams.nonEmpty();
+                     typarams = typarams.tail)
+                    baseScope.enter(typarams.head.type.tsym);
+            Env<AttrContext> outer = env.outer; // the base clause can't see members of this class
+            Env<AttrContext> localEnv = outer.dup(tree, outer.info.dup(baseScope));
+            localEnv.baseClause = true;
+            localEnv.outer = outer;
+            localEnv.info.isSelfCall = false;
+            return localEnv;
+        }
+
+
         /** Generate a base clause for an enum type.
          *  @param pos              The position for trees and diagnostics, if any
          *  @param c                The class symbol of the enum
@@ -1014,6 +1038,7 @@ public class TypeEnter implements Completer {
             // Add default constructor if needed.
             DefaultConstructorHelper helper = getDefaultConstructorHelper(env);
             if (helper != null) {
+                chk.checkDefaultConstructor(sym, tree.pos());
                 defaultConstructor = defaultConstructor(make.at(tree.pos), helper);
                 tree.defs = tree.defs.prepend(defaultConstructor);
             }
@@ -1270,7 +1295,7 @@ public class TypeEnter implements Completer {
         WriteableScope baseScope = WriteableScope.create(tree.sym);
         //import already entered local classes into base scope
         for (Symbol sym : env.outer.info.scope.getSymbols(NON_RECURSIVE)) {
-            if (sym.isLocal()) {
+            if (sym.isDirectlyOrIndirectlyLocal()) {
                 baseScope.enter(sym);
             }
         }

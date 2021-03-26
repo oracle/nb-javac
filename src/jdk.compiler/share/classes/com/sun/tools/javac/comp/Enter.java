@@ -521,7 +521,7 @@ public class Enter extends JCTree.Visitor {
                     typeEnvs.put(tree.sym, localEnv);
                     tree.sym.completer = typeEnter;
                     ((ClassType)result).typarams_field = classEnter(tree.typarams, localEnv);
-                    if (!tree.sym.isLocal() && uncompleted != null) uncompleted.append(tree.sym);
+                    if (!tree.sym.isDirectlyOrIndirectlyLocal()&& uncompleted != null) uncompleted.append(tree.sym);
                     tree.type = tree.sym.type;
                     return;
                 }
@@ -617,7 +617,7 @@ public class Enter extends JCTree.Visitor {
 
         // Enter class into `compiled' table and enclosing scope.
         if (!reattr && !noctx && (chk.getCompiled(c) != null
-                || (!c.isLocal() && duplicateClassChecker != null && duplicateClassChecker.check(c.fullname, env.toplevel.getSourceFile())))) {
+                || (!c.isDirectlyOrIndirectlyLocal() && duplicateClassChecker != null && duplicateClassChecker.check(c.fullname, env.toplevel.getSourceFile())))) {
             duplicateClass(tree.pos(), c);
             result = types.createErrorType(tree.name, owner, Type.noType);
             tree.sym = c = (ClassSymbol)result.tsym;
@@ -716,7 +716,7 @@ public class Enter extends JCTree.Visitor {
 
         // Add non-local class to uncompleted, to make sure it will be
         // completed later.
-        if (!c.isLocal() && uncompleted != null) uncompleted.append(c);
+        if (!c.isDirectlyOrIndirectlyLocal() && uncompleted != null) uncompleted.append(c);
 //      System.err.println("entering " + c.fullname + " in " + c.owner);//DEBUG
 
         // Recursively enter all member classes.

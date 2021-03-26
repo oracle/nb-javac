@@ -1351,6 +1351,31 @@ public class JavacProcessingEnvironment implements ProcessingEnvironment, Closea
             types.newRound();
             annotate.newRound();
             elementUtils.newRound();
+
+            boolean foundError = false;
+
+            for (ClassSymbol cs : symtab.getAllClasses()) {
+                if (cs.kind == ERR) {
+                    foundError = true;
+                    break;
+                }
+            }
+
+            if (foundError) {
+                for (ClassSymbol cs : symtab.getAllClasses()) {
+                    if (cs.classfile != null || cs.kind == ERR) {
+                        Kinds.Kind symKind = cs.kind;
+                        cs.reset();
+                        if (symKind == ERR) {
+                            cs.type = new ClassType(cs.type.getEnclosingType(), null, cs);
+                        }
+                        if (cs.isCompleted()) {
+                            cs.completer = initialCompleter;
+                        }
+                    }
+                }
+            }
+
         }
     }
 
@@ -1769,7 +1794,7 @@ public class JavacProcessingEnvironment implements ProcessingEnvironment, Closea
 
 
     private boolean moreToDo() {
-        return filer.newFiles() && isBackgroundCompilation;
+        return filer.newFiles();// && isBackgroundCompilation;
     }
 
     /**

@@ -46,6 +46,7 @@ import static com.sun.tools.javac.main.Option.*;
  *  This code and its internal interfaces are subject to change or
  *  deletion without notice.</b>
  */
+
 public enum Source {
     /** 1.0 had no inner classes, and so could not pass the JCK. */
     // public static final Source JDK1_0 =              new Source("1.0");
@@ -100,9 +101,14 @@ public enum Source {
     JDK14("14"),
 
     /**
-      * 15, tbd
+      * 15, text blocks
       */
-    JDK15("15");
+    JDK15("15"),
+
+    /**
+      * 16, tbd
+      */
+    JDK16("16");
 
     private static final Context.Key<Source> sourceKey = new Context.Key<>();
 
@@ -153,6 +159,7 @@ public enum Source {
     }
 
     public Target requiredTarget() {
+        if (this.compareTo(JDK16) >= 0) return Target.JDK1_16;
         if (this.compareTo(JDK15) >= 0) return Target.JDK1_15;
         if (this.compareTo(JDK14) >= 0) return Target.JDK1_14;
         if (this.compareTo(JDK13) >= 0) return Target.JDK1_13;
@@ -206,10 +213,10 @@ public enum Source {
         SWITCH_RULE(JDK14, Fragments.FeatureSwitchRules, DiagKind.PLURAL),
         SWITCH_EXPRESSION(JDK14, Fragments.FeatureSwitchExpressions, DiagKind.PLURAL),
         TEXT_BLOCKS(JDK15, Fragments.FeatureTextBlocks, DiagKind.PLURAL),
-        PATTERN_MATCHING_IN_INSTANCEOF(JDK15, Fragments.FeaturePatternMatchingInstanceof, DiagKind.NORMAL),
-        REIFIABLE_TYPES_INSTANCEOF(JDK15, Fragments.FeatureReifiableTypesInstanceof, DiagKind.PLURAL),
-        RECORDS(JDK15, Fragments.FeatureRecords, DiagKind.PLURAL),
-        SEALED_CLASSES(JDK15, Fragments.FeatureSealedClasses, DiagKind.PLURAL),
+        PATTERN_MATCHING_IN_INSTANCEOF(JDK16, Fragments.FeaturePatternMatchingInstanceof, DiagKind.NORMAL),
+        REIFIABLE_TYPES_INSTANCEOF(JDK16, Fragments.FeatureReifiableTypesInstanceof, DiagKind.PLURAL),
+        RECORDS(JDK16, Fragments.FeatureRecords, DiagKind.PLURAL),
+        SEALED_CLASSES(JDK16, Fragments.FeatureSealedClasses, DiagKind.PLURAL),
         ;
 
         enum DiagKind {
@@ -301,6 +308,8 @@ public enum Source {
             return RELEASE_14;
         case JDK15:
             return RELEASE_15;
+        case JDK16:
+            return RELEASE_16;
         default:
             return null;
         }

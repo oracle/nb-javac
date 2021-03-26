@@ -111,8 +111,8 @@ public class DocCommentParserTest extends TestCase {
     
     public void testInlineSpan() throws IOException {
         doTestErrorRecovery("{@literal code}\n",
-                            "DOC_COMMENT:{@literal code}",
-                            "LITERAL:{@literal code}",
+                            "DOC_COMMENT:{@literal code}\n",
+                            "LITERAL:{@literal code}\n",
                             "TEXT:code"
                            );
     }

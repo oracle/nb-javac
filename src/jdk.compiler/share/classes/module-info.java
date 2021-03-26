@@ -71,6 +71,7 @@
  */
 module jdk.compiler {
     requires transitive java.compiler;
+	requires java.logging;
 
     exports com.sun.source.doctree;
     exports com.sun.source.tree;
@@ -81,7 +82,8 @@ module jdk.compiler {
         jdk.javadoc;
     exports com.sun.tools.javac.api to
         jdk.javadoc,
-        jdk.jshell;
+        jdk.jshell,
+		java.compiler;
     exports com.sun.tools.javac.resources to
         jdk.jshell;
     exports com.sun.tools.javac.code to
@@ -117,10 +119,11 @@ module jdk.compiler {
 
     uses javax.annotation.processing.Processor;
     uses com.sun.source.util.Plugin;
+    uses com.sun.tools.doclint.DocLint;
     uses com.sun.tools.javac.platform.PlatformProvider;
 
-    provides java.util.spi.ToolProvider with
-        com.sun.tools.javac.main.JavacToolProvider;
+    //provides java.util.spi.ToolProvider with
+        //com.sun.tools.javac.main.JavacToolProvider;
 
     provides com.sun.tools.javac.platform.PlatformProvider with
         com.sun.tools.javac.platform.JDKPlatformProvider;

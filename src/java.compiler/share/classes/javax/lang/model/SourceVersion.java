@@ -168,7 +168,7 @@ public enum SourceVersion {
      *
      * @since 10
      */
-     RELEASE_10,
+    RELEASE_10,
 
     /**
      * The version recognized by the Java Platform, Standard Edition
@@ -179,7 +179,7 @@ public enum SourceVersion {
      *
      * @since 11
      */
-     RELEASE_11,
+    RELEASE_11,
 
     /**
      * The version recognized by the Java Platform, Standard Edition
@@ -187,7 +187,7 @@ public enum SourceVersion {
      *
      * @since 12
      */
-     RELEASE_12,
+    RELEASE_12,
 
     /**
      * The version recognized by the Java Platform, Standard Edition
@@ -195,7 +195,7 @@ public enum SourceVersion {
      *
      * @since 13
      */
-     RELEASE_13,
+    RELEASE_13,
 
     /**
      * The version recognized by the Java Platform, Standard Edition
@@ -215,18 +215,24 @@ public enum SourceVersion {
      *
      * @since 15
      */
-     RELEASE_15;
+    RELEASE_15,
+
+    /**
+     * The version recognized by the Java Platform, Standard Edition
+     * 16.
+     *
+     * @since 16
+     */
+    RELEASE_16;
 
     // Note that when adding constants for newer releases, the
     // behavior of latest() and latestSupported() must be updated too.
 
     /**
-     * Returns the latest source version that can be modeled.
-     *
-     * @return the latest source version that can be modeled
+     * {@return the latest source version that can be modeled}
      */
     public static SourceVersion latest() {
-        return RELEASE_15;
+        return RELEASE_16;
     }
 
     private static final SourceVersion latestSupported = getLatestSupported();
@@ -239,10 +245,15 @@ public enum SourceVersion {
      * need to be updated accordingly.
      */
     private static SourceVersion getLatestSupported() {
+
         try {
             String specVersion = System.getProperty("java.specification.version");
 
             switch (specVersion) {
+		case "16":
+                    return RELEASE_16;
+
+
                 case "15":
                     return RELEASE_15;
                 case "14":
@@ -270,9 +281,12 @@ public enum SourceVersion {
         return RELEASE_5;
     }
 
+
+
     /**
-     * Returns the latest source version fully supported by the
-     * current execution environment.  {@code RELEASE_5} or later must
+     * {@return the latest source version fully supported by the
+     * current execution environment}  {@code RELEASE_9} or later must
+
      * be returned.
      *
      * @apiNote This method is included alongside {@link latest} to
@@ -289,8 +303,6 @@ public enum SourceVersion {
      * current execution environment, the processor should only use
      * platform features up to the {@code latestSupported} release,
      * which may be earlier than the {@code latest} release.
-     *
-     * @return the latest source version that is fully supported
      */
     public static SourceVersion latestSupported() {
         return latestSupported;
@@ -409,7 +421,7 @@ public enum SourceVersion {
      * literal, or null literal, {@code false} otherwise.
      * @jls 3.9 Keywords
      * @jls 3.10.3 Boolean Literals
-     * @jls 3.10.7 The Null Literal
+     * @jls 3.10.8 The Null Literal
      */
     public static boolean isKeyword(CharSequence s) {
         return isKeyword(s, latest());
@@ -427,7 +439,7 @@ public enum SourceVersion {
      * literal, or null literal, {@code false} otherwise.
      * @jls 3.9 Keywords
      * @jls 3.10.3 Boolean Literals
-     * @jls 3.10.7 The Null Literal
+     * @jls 3.10.8 The Null Literal
      * @since 9
      */
     public static boolean isKeyword(CharSequence s, SourceVersion version) {

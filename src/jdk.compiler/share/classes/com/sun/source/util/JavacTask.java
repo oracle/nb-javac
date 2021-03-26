@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -49,6 +49,10 @@ import java.lang.reflect.Method;
  * @since 1.6
  */
 public abstract class JavacTask implements CompilationTask {
+    /**
+     * Constructor for subclasses to call.
+     */
+    public JavacTask() {}
 
     /**
      * Parses the specified files returning a list of abstract syntax trees.
@@ -134,7 +138,7 @@ public abstract class JavacTask implements CompilationTask {
      *
      * @implSpec The default implementation of this method does nothing.
      *
-     * @param provider the provider.
+     * @param provider the provider
      * @since 13
      */
     public void setParameterNameProvider(ParameterNameProvider provider) {}

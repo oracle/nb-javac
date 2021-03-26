@@ -76,7 +76,6 @@ import static javax.lang.model.SourceVersion.*;
  * @see ElementScanner8
  * @see ElementScanner14
  * @since 9
- * @spec JPMS
  */
 
 @SupportedSourceVersion(RELEASE_14)

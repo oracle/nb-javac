@@ -545,7 +545,7 @@ public class JavacParserTest extends TestCase {
             codes.add(d.getCode());
         }
 
-        assertEquals(Arrays.<String>asList("compiler.err.expected3"), codes);//TODO: was "compiler.err.illegal.start.of.expr" before JDK8 merge
+        assertEquals(Arrays.<String>asList("compiler.err.expected4"), codes);//TODO: was "compiler.err.illegal.start.of.expr" before JDK8 merge
 //        assertEquals(Arrays.<String>asList("compiler.err.illegal.start.of.expr"), codes);
     }
 
