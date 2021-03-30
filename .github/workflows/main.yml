@@ -12,8 +12,10 @@ jobs:
     steps: 
       - 
         uses: actions/checkout@v2
+      - name: Set up JDK 8    
+        uses: actions/setup-java@v1
         with:
-          java-version: '8'
+          java-version: '8'     
       - 
         name: "Build nb-javac"
         run: "ant -f ./make/langtools/netbeans/nb-javac clean jar"
