@@ -12,6 +12,8 @@ jobs:
     steps: 
       - 
         uses: actions/checkout@v2
+        with:
+          java-version: '8'
       - 
         name: "Build nb-javac"
         run: "ant -f ./make/langtools/netbeans/nb-javac clean jar"
