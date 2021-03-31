@@ -7,9 +7,9 @@
     <import file="nbproject/build-impl.xml"/>
     <!--
 
-    There exist several targets which are by default empty and which can be 
-    used for execution of your tasks. These targets are usually executed 
-    before and after some main targets. They are: 
+    There exist several targets which are by default empty and which can be
+    used for execution of your tasks. These targets are usually executed
+    before and after some main targets. They are:
 
       -pre-init:                 called before initialization of project properties
       -post-init:                called after initialization of project properties
@@ -35,12 +35,12 @@
             </obfuscate>
         </target>
 
-    For list of available properties check the imported 
-    nbproject/build-impl.xml file. 
+    For list of available properties check the imported
+    nbproject/build-impl.xml file.
 
 
     Another way to customize the build is by overriding existing main targets.
-    The targets of interest are: 
+    The targets of interest are:
 
       -init-macrodef-javac:     defines macro for javac compilation
       -init-macrodef-junit:     defines macro for junit execution
@@ -48,7 +48,7 @@
       -init-macrodef-java:      defines macro for class execution
       -do-jar-with-manifest:    JAR building (if you are using a manifest)
       -do-jar-without-manifest: JAR building (if you are not using a manifest)
-      run:                      execution of project 
+      run:                      execution of project
       -javadoc-build:           Javadoc generation
       test-report:              JUnit report generation
 
@@ -60,10 +60,10 @@
             </exec>
         </target>
 
-    Notice that the overridden target depends on the jar target and not only on 
-    the compile target as the regular run target does. Again, for a list of available 
+    Notice that the overridden target depends on the jar target and not only on
+    the compile target as the regular run target does. Again, for a list of available
     properties which you can use, check the target you are overriding in the
-    nbproject/build-impl.xml file. 
+    nbproject/build-impl.xml file.
 
     -->
 
@@ -75,44 +75,44 @@
 
     <!-- suppress javadoc generation for this library, as its wrappers do it -->
     <target name="-javadoc-build"/>
-    
+
     <target name="-post-init">
         <available file="../../../../../nbbuild/netbeans/java/modules/ext" type="dir" property="modules.ext.exists"/>
     </target>
-    
+
     <target name="-separate-jars">
         <jar destfile="${dist.dir}/nb-javac-${nb-javac-ver}-api.jar">
             <fileset dir="${build.classes.dir}">
-               <!-- <include name="com/sun/javadoc/**/*"/> -->
+                <!-- <include name="com/sun/javadoc/**/*"/> -->
                 <include name="com/sun/source/**/*"/>
                 <include name="javax/lang/**/*"/>
                 <include name="javax/tools/*"/>
                 <include name="jdk/internal/PreviewFeature*"/>
                 <include name="javax/annotation/**/*"/>
-				
+
             </fileset>
-			<fileset dir="${nb.javac.dir}">
-				<include name="README.md"/>
-				<include name="LICENSE.tx"/>
-				<include name="SECURITY.md"/>
-			</fileset>
+            <fileset dir="${nb.javac.dir}">
+                <include name="README.md"/>
+                <include name="LICENSE.tx"/>
+                <include name="SECURITY.md"/>
+            </fileset>
         </jar>
         <jar destfile="${dist.dir}/nb-javac-${nb-javac-ver}-impl.jar">
             <fileset dir="${build.classes.dir}">
                 <include name="com/sun/tools/**/*"/>
-		<include name="jdk/internal/shellsupport/**/*"/>
+                <include name="jdk/internal/shellsupport/**/*"/>
                 <include name="jdk/internal/PreviewFeature*"/>
                 <include name="java/lang/**/*"/>
             </fileset>
-			<fileset dir="${nb.javac.dir}">
-				<include name="README.md"/>
-				<include name="LICENSE.tx"/>
-				<include name="SECURITY.md"/>
-			</fileset>
+            <fileset dir="${nb.javac.dir}">
+                <include name="README.md"/>
+                <include name="LICENSE.tx"/>
+                <include name="SECURITY.md"/>
+            </fileset>
         </jar>
         <delete file="${dist.jar}"/>
     </target>
-    
+
     <target name="-copy-jars-to-build" if="modules.ext.exists">
         <copy file="${dist.dir}/nb-javac-${nb-javac-ver}-api.jar" tofile="../../../../../nbbuild/netbeans/java/modules/ext/nb-javac-api.jar" />
         <copy file="${dist.dir}/nb-javac-${nb-javac-ver}-impl.jar" tofile="../../../../../nbbuild/netbeans/java/modules/ext/nb-javac-impl.jar" />
@@ -166,6 +166,10 @@
     <property name="maven-snapshots-repository-url" value="https://oss.sonatype.org/content/repositories/snapshots/" />
     <property name="maven-staging-repository-id" value="oss.sonatype.org" />
     <property name="maven-staging-repository-url" value="https://oss.sonatype.org/service/local/staging/deploy/maven2/" />
+    <!-- folder constant for maven nbm projects -->
+    <property name="nbm-nbjavac-api-dir" value="build/nbm/nbm-nbjavac-api" />
+    <property name="nbm-nbjavac-impl-dir" value="build/nbm/nbm-nbjavac-impl" />
+    <property name="nbm-nbjavac-lib-dir" value="build/nbm/nbm-nbjavac-lib" />
 
     <target name="-prepare-maven-version" depends="clean,jar">
         <property name="maven.version" value="${nb-javac-ver}"/>
@@ -194,6 +198,81 @@
         <replaceregexp match="(&lt;groupId&gt;).*(&lt;/groupId&gt;)"
                        replace="\1${maven.groupId}\2"
                        file="build/pom-nb-javac.xml"/>
+        <!-- install jar in local maven so they can be used as dependencies -->
+        <exec executable="mvn" output="build/maven-install.log" failonerror="true">
+            <arg value="org.apache.maven.plugins:maven-install-plugin:3.0.0-M1:install-file"/>
+            <arg value="-DpomFile=build/pom-nb-javac.xml"/>
+            <arg value="-Dfile=dist/nb-javac-${nb-javac-ver}-api.jar"/>
+            <arg value="-DgroudId=${maven.groupId}"/>
+            <arg value="-DartefactId=nb-javac" />
+            <arg value="-Dpackaging=jar" />
+            <arg value="-Dclassifier=api" />
+        </exec>
+        <exec executable="mvn" output="build/maven-install.log" failonerror="true">
+            <arg value="org.apache.maven.plugins:maven-install-plugin:3.0.0-M1:install-file"/>
+            <arg value="-DpomFile=build/pom-nb-javac.xml"/>
+            <arg value="-Dfile=dist/nb-javac-${nb-javac-ver}-impl.jar"/>
+            <arg value="-DgroudId=${maven.groupId}"/>
+            <arg value="-DartefactId=nb-javac" />
+            <arg value="-Dpackaging=jar" />
+        </exec>
+        <!-- copy rewrite pom with groupid and version -->
+        <copy file="nbm-poms/api.xml" tofile="${nbm-nbjavac-api-dir}/pom.xml" />
+        <copy file="nbm-poms/impl.xml" tofile="${nbm-nbjavac-impl-dir}/pom.xml" />
+        <copy file="nbm-poms/lib.xml" tofile="${nbm-nbjavac-lib-dir}/pom.xml" />
+        <replaceregexp flags="g"
+                       match="(&lt;groupId&gt;)TEMPLATE(&lt;/groupId&gt;)"
+                       replace="\1${maven.groupId}\2" >
+            <fileset dir="build/nbm" includes="**/pom.xml"/>
+        </replaceregexp>
+        <replaceregexp flags="g"
+                       match="(&lt;version&gt;)TEMPLATE(&lt;/version&gt;)"
+                       replace="\1${maven.version}\2" >
+            <fileset dir="build/nbm" includes="**/pom.xml"/>
+        </replaceregexp>
+        <!-- prepare bundle and manifest taken from Apache NetBeans  -->
+        <echo file="${nbm-nbjavac-api-dir}/src/main/nbm/manifest.mf">Manifest-Version: 1.0
+            AutoUpdate-Show-In-Client: false
+            OpenIDE-Module: org.netbeans.modules.nbjavac.api
+            OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/nbjavac/api/Bundle.properties
+            OpenIDE-Module-Specification-Version: 2.4
+            OpenIDE-Module-Hide-Classpath-Packages: com.sun.javadoc.**, com.sun.source.**, javax.annotation.processing.**, javax.lang.model.**, javax.tools.**, com.sun.tools.javac.**
+            OpenIDE-Module-Fragment-Host: org.netbeans.libs.javacapi
+        </echo>
+        <echo file="${nbm-nbjavac-api-dir}/src/main/resources/org/netbeans/modules/nbjavac/api/Bundle.properties">OpenIDE-Module-Name=nb-javac API</echo>
+        <echo file="${nbm-nbjavac-impl-dir}/src/main/nbm/manifest.mf">Manifest-Version: 1.0
+            AutoUpdate-Show-In-Client: false
+            OpenIDE-Module: org.netbeans.modules.nbjavac.impl
+            OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/nbjavac/impl/Bundle.properties
+            OpenIDE-Module-Specification-Version: 2.4
+            OpenIDE-Module-Hide-Classpath-Packages: com.sun.tools.javac.**, com.sun.tools.javadoc.**, com.sun.tools.javap.**, com.sun.tools.classfile.**, com.sun.tools.doclint.**
+            OpenIDE-Module-Fragment-Host: org.netbeans.libs.javacimpl
+            OpenIDE-Module-Provides: org.netbeans.modules.nbjavac
+        </echo>
+        <echo file="${nbm-nbjavac-impl-dir}/src/main/resources/org/netbeans/modules/nbjavac/impl/Bundle.properties">OpenIDE-Module-Name=nb-javac Impl</echo>
+        <echo file="${nbm-nbjavac-lib-dir}/src/main/nbm/manifest.mf">Manifest-Version: 1.0
+            AutoUpdate-Show-In-Client: true
+            OpenIDE-Module: org.netbeans.modules.nbjavac
+            OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/nbjavac/Bundle.properties
+            OpenIDE-Module-Specification-Version: 2.0
+        </echo>
+        <echo file="${nbm-nbjavac-lib-dir}/src/main/resources/org/netbeans/modules/nbjavac/Bundle.properties">OpenIDE-Module-Display-Category=Java
+            OpenIDE-Module-Long-Description=\
+            This library improves the Java editor behavior and enables the Compile on Save features. \
+            Supports JDK-15 features.
+            OpenIDE-Module-Name=The nb-javac Java editing support library
+            OpenIDE-Module-Short-Description=The nb-javac Java editing support library
+        </echo>
+        <!-- create nbm for nbjavac api,impl and lib -->
+        <exec dir="${nbm-nbjavac-api-dir}" executable="mvn" output="build/maven-build.log" failonerror="true">
+            <arg value="clean install"/>
+        </exec>
+        <exec dir="${nbm-nbjavac-impl-dir}" executable="mvn" output="build/maven-build.log" failonerror="true">
+            <arg value="clean install"/>
+        </exec>
+        <exec dir="${nbm-nbjavac-lib-dir}" executable="mvn" output="build/maven-build.log" failonerror="true">
+            <arg value="clean install"/>
+        </exec>
     </target>
 
     <target name="publish-to-ossrh-snapshots"
@@ -210,9 +289,37 @@
             <arg value="-Dtypes=jar,jar,jar" />
             <arg value="-Dclassifiers=api,sources,javadoc" />
         </exec>
+        <!-- populate nbm api,impl and lib -->
+        <exec executable="mvn" output="build/maven-publish.log" failonerror="true">
+            <arg value="org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file"/>
+            <arg value="-Durl=${maven-snapshots-repository-url}"/>
+            <arg value="-DrepositoryId=${maven-snapshots-repository-id}"/>
+            <arg value="-DpomFile=${nbm-nbjavac-api-dir}/pom.xml"/>
+            <arg value="-Dfile=${nbm-nbjavac-api-dir}/target/nbjavac-api-${nb-javac-ver}.jar"/>
+            <arg value="-Dfiles=${nbm-nbjavac-api-dir}/target/nbjavac-api-${nb-javac-ver}.nbm"/>
+            <arg value="-Dtypes=nbm" />
+        </exec>
+        <exec executable="mvn" output="build/maven-publish.log" failonerror="true">
+            <arg value="org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file"/>
+            <arg value="-Durl=${maven-snapshots-repository-url}"/>
+            <arg value="-DrepositoryId=${maven-snapshots-repository-id}"/>
+            <arg value="-DpomFile=${nbm-nbjavac-impl-dir}/pom.xml"/>
+            <arg value="-Dfile=${nbm-nbjavac-impl-dir}/target/nbjavac-impl-${nb-javac-ver}.jar"/>
+            <arg value="-Dfiles=${nbm-nbjavac-impl-dir}/target/nbjavac-impl-${nb-javac-ver}.nbm"/>
+            <arg value="-Dtypes=nbm" />
+        </exec>
+        <exec executable="mvn" output="build/maven-publish.log" failonerror="true">
+            <arg value="org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file"/>
+            <arg value="-Durl=${maven-snapshots-repository-url}"/>
+            <arg value="-DrepositoryId=${maven-snapshots-repository-id}"/>
+            <arg value="-DpomFile=${nbm-nbjavac-lib-dir}/pom.xml"/>
+            <arg value="-Dfile=${nbm-nbjavac-lib-dir}/target/nbjavac-lib-${nb-javac-ver}.jar"/>
+            <arg value="-Dfiles=${nbm-nbjavac-lib-dir}/target/nbjavac-lib-${nb-javac-ver}.nbm"/>
+            <arg value="-Dtypes=nbm" />
+        </exec>
     </target>
 
-    <target name="publish-to-maven-central" 
+    <target name="publish-to-maven-central"
             description="Build nb-javac and stage for maven central"
             depends="-prepare-maven-version,-prepare-maven">
 
@@ -225,6 +332,37 @@
             <arg value="-Dfiles=dist/nb-javac-${nb-javac-ver}-api.jar,dist/nb-javac-${nb-javac-ver}-sources.zip,dist/nb-javac-${nb-javac-ver}-doc.zip"/>
             <arg value="-Dtypes=jar,jar,jar" />
             <arg value="-Dclassifiers=api,sources,javadoc" />
+            <arg value="-Dgpg.useagent=true"/>
+        </exec>
+        <!-- populate nbm api,impl and lib -->
+        <exec executable="mvn" output="build/maven-publish.log" failonerror="true">
+            <arg value="org.apache.maven.plugins:maven-gpg-plugin:1.4:sign-and-deploy-file"/>
+            <arg value="-Durl=${maven-staging-repository-url}"/>
+            <arg value="-DrepositoryId=${maven-staging-repository-id}"/>
+            <arg value="-DpomFile=${nbm-nbjavac-api-dir}/pom.xml"/>
+            <arg value="-Dfile=${nbm-nbjavac-api-dir}/target/nbjavac-api-${nb-javac-ver}.jar"/>
+            <arg value="-Dfiles=${nbm-nbjavac-api-dir}/target/nbjavac-api-${nb-javac-ver}.nbm"/>
+            <arg value="-Dtypes=nbm" />
+            <arg value="-Dgpg.useagent=true"/>
+        </exec>
+        <exec executable="mvn" output="build/maven-publish.log" failonerror="true">
+            <arg value="org.apache.maven.plugins:maven-gpg-plugin:1.4:sign-and-deploy-file"/>
+            <arg value="-Durl=${maven-staging-repository-url}"/>
+            <arg value="-DrepositoryId=${maven-staging-repository-id}"/>
+            <arg value="-DpomFile=${nbm-nbjavac-impl-dir}/pom.xml"/>
+            <arg value="-Dfile=${nbm-nbjavac-impl-dir}/target/nbjavac-impl-${nb-javac-ver}.jar"/>
+            <arg value="-Dfiles=${nbm-nbjavac-impl-dir}/target/nbjavac-impl-${nb-javac-ver}.nbm"/>
+            <arg value="-Dtypes=nbm" />
+            <arg value="-Dgpg.useagent=true"/>
+        </exec>
+        <exec executable="mvn" output="build/maven-publish.log" failonerror="true">
+            <arg value="org.apache.maven.plugins:maven-gpg-plugin:1.4:sign-and-deploy-file"/>
+            <arg value="-Durl=${maven-staging-repository-url}"/>
+            <arg value="-DrepositoryId=${maven-staging-repository-id}"/>
+            <arg value="-DpomFile=${nbm-nbjavac-lib-dir}/pom.xml"/>
+            <arg value="-Dfile=${nbm-nbjavac-lib-dir}/target/nbjavac-lib-${nb-javac-ver}.jar"/>
+            <arg value="-Dfiles=${nbm-nbjavac-lib-dir}/target/nbjavac-lib-${nb-javac-ver}.nbm"/>
+            <arg value="-Dtypes=nbm" />
             <arg value="-Dgpg.useagent=true"/>
         </exec>
     </target>
