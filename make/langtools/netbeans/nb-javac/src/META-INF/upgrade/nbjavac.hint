@@ -184,3 +184,38 @@ $class.cast(((java.util.function.Supplier<Object>) () -> {
     }
 }).get())
 ;;
+
+protected TypeEnter(com.sun.tools.javac.util.Context context) {
+    $code$
+}
+:: inClass("com.sun.tools.javac.comp.TypeEnter")
+=>
+private final boolean ignoreNoLang;
+private final DeferredCompletionFailureHandler dcfh;
+private final JavacMessages messages;
+protected TypeEnter(com.sun.tools.javac.util.Context context) {
+    $code$;
+    com.sun.tools.javac.util.Options options = com.sun.tools.javac.util.Options.instance(context);
+    boolean ideMode = options.get("ide") != null;
+    boolean backgroundCompilation = options.get("backgroundCompilation") != null;
+    this.ignoreNoLang = ideMode && !backgroundCompilation;
+    this.dcfh = DeferredCompletionFailureHandler.instance(context);
+    this.messages = JavacMessages.instance(context);
+}
+;;
+
+if ($pkg.members().isEmpty() && !$pkg.exists()) {
+    throw $code$;
+}
+:: $pkg instanceof com.sun.tools.javac.code.Symbol.PackageSymbol
+=>
+if ($pkg.members().isEmpty() && !$pkg.exists()) {
+    com.sun.tools.javac.util.JCDiagnostic msg = diags.fragment(com.sun.tools.javac.resources.CompilerProperties.Fragments.FatalErrNoJavaLang);
+    if (ignoreNoLang) {
+        throw new com.sun.tools.javac.code.Symbol.CompletionFailure(javaLang, () -> {
+            return msg;
+        }, dcfh);
+    }
+    throw $code$;
+}
+;;
