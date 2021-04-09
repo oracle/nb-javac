@@ -205,7 +205,24 @@ public interface StandardJavaFileManager extends JavaFileManager {
      */
     default Iterable<? extends JavaFileObject> getJavaFileObjectsFromPaths(
             Collection<? extends Path> paths) {
-        return getJavaFileObjectsFromFiles(Util.asFiles(paths));
+        return getJavaFileObjectsFromFiles(() -> new Iterator<File>() {
+            final Iterator<? extends Path> iter = paths.iterator();
+
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public File next() {
+                Path p = iter.next();
+                try {
+                    return p.toFile();
+                } catch (UnsupportedOperationException e) {
+                    throw new IllegalArgumentException(p.toString(), e);
+                }
+            }
+        });
     }
 
     /**
@@ -231,10 +248,18 @@ public interface StandardJavaFileManager extends JavaFileManager {
      * {@code Path} and have it be treated as an {@code Iterable} of its
      * components.
      */
-    @Deprecated()
+    @Deprecated(since = "13")
     default Iterable<? extends JavaFileObject> getJavaFileObjectsFromPaths(
             Iterable<? extends Path> paths) {
-        return getJavaFileObjectsFromPaths(Util.asCollection(paths));
+        if (paths instanceof Collection) {
+            return getJavaFileObjectsFromPaths((Collection) paths);
+        }
+        List<Path> result = new ArrayList<>();
+        
+        for (Path item : paths) {
+            result.add(item);
+        }
+        return getJavaFileObjectsFromPaths(result);
     }
 
     /**
@@ -351,7 +376,24 @@ public interface StandardJavaFileManager extends JavaFileManager {
      */
     default void setLocationFromPaths(Location location, Collection<? extends Path> paths)
             throws IOException {
-        setLocation(location, Util.asFiles(paths));
+        setLocation(location, () -> new Iterator<File>() {
+            final Iterator<? extends Path> iter = paths.iterator();
+
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public File next() {
+                Path p = iter.next();
+                try {
+                    return p.toFile();
+                } catch (UnsupportedOperationException e) {
+                    throw new IllegalArgumentException(p.toString(), e);
+                }
+            }
+        });
     }
 
     /**
@@ -420,7 +462,19 @@ public interface StandardJavaFileManager extends JavaFileManager {
      * @since 9
      */
     default Iterable<? extends Path> getLocationAsPaths(Location location) {
-        return Util.asPaths(getLocation(location));
+        return () -> new Iterator<Path>() {
+            final Iterator<? extends File> iter = getLocation(location).iterator();
+
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public Path next() {
+                return iter.next().toPath();
+            }
+        };
     }
 
     /**
@@ -476,56 +530,9 @@ public interface StandardJavaFileManager extends JavaFileManager {
       *
       * @since 9
       */
-    default void setPathFactory(PathFactory f) { }
-
-    class Util {
-        private static Iterable<Path> asPaths(final Iterable<? extends File> files) {
-            return () -> new Iterator<Path>() {
-                final Iterator<? extends File> iter = files.iterator();
-
-                @Override
-                public boolean hasNext() {
-                    return iter.hasNext();
-                }
-
-                @Override
-                public Path next() {
-                    return iter.next().toPath();
-                }
-            };
-        }
-
-        private static Iterable<File> asFiles(final Iterable<? extends Path> paths) {
-            return () -> new Iterator<File>() {
-                final Iterator<? extends Path> iter = paths.iterator();
-
-                @Override
-                public boolean hasNext() {
-                    return iter.hasNext();
-                }
-
-                @Override
-                public File next() {
-                    Path p = iter.next();
-                    try {
-                        return p.toFile();
-                    } catch (UnsupportedOperationException e) {
-                        throw new IllegalArgumentException(p.toString(), e);
-                    }
-                }
-            };
-        }
-         
-        private static <T> Collection<T> asCollection(Iterable<T> iterable) {
-            if (iterable instanceof Collection) {
-                return (Collection<T>) iterable;
-            }
-            List<T> result = new ArrayList<>();
-            for (T item : iterable) {
-                result.add(item);
-            }
-            return result;
-        }
+    default void setPathFactory(PathFactory f) {
     }
+
 }
     
+

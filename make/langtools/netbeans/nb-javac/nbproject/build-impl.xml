@@ -1074,7 +1074,7 @@ is divided into following sections:
         </propertyfile>
 	<property location="${build.dir}/lib" name="lib.dir"/>
 	<mkdir dir="${lib.dir}"/>
-	<get dest="${lib.dir}">
+	<get skipexisting="true" dest="${lib.dir}">
 	    <url url="${maven.repo.url}/junit/junit/4.12/junit-4.12.jar"/>
 	    <url url="${maven.repo.url}/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"/>
 	</get>    

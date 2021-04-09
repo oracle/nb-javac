@@ -80,6 +80,14 @@
         <available file="../../../../../nbbuild/netbeans/java/modules/ext" type="dir" property="modules.ext.exists"/>
     </target>
     
+    <target name="-pre-compile">
+        <mkdir dir="${build.dir}/depr-src/java/lang" />
+        <echo file="${build.dir}/depr-src/java/lang/Deprecated.java">package java.lang; @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME) public @interface Deprecated {public String since() default ""; }</echo>
+        <mkdir dir="${build.dir}/depr-classes/" />
+        <property name="build.depr.classes" location="${build.dir}/depr-classes/" />
+        <javac srcdir="${build.dir}/depr-src/java/lang" destdir="${build.depr.classes}" />
+    </target>
+    
     <target name="-separate-jars">
         <jar destfile="${dist.dir}/nb-javac-${nb-javac-ver}-api.jar">
             <fileset dir="${build.classes.dir}">
