@@ -231,7 +231,7 @@
     <!-- suppress javadoc generation for this library, as its wrappers do it -->
     <target name="-javadoc-build"/>
 
-    <target name="-separate-jars">
+    <target name="-separate-jars" depends="init">
         <jar destfile="${dist.dir}/nb-javac-${nb-javac-ver}-api.jar">
             <fileset dir="${build.classes.dir}">
                <!-- <include name="com/sun/javadoc/**/*"/> -->
@@ -240,27 +240,28 @@
                 <include name="javax/tools/*"/>
                 <include name="jdk/internal/PreviewFeature*"/>
                 <include name="javax/annotation/**/*"/>
-
             </fileset>
-			<fileset dir="${nb.javac.dir}">
-				<include name="README.md"/>
-				<include name="LICENSE.tx"/>
-				<include name="SECURITY.md"/>
-			</fileset>
+            <fileset dir="${nb.javac.dir}">
+                    <include name="README.md"/>
+                    <include name="LICENSE.tx"/>
+                    <include name="SECURITY.md"/>
+            </fileset>
         </jar>
         <jar destfile="${dist.dir}/nb-javac-${nb-javac-ver}-impl.jar">
             <fileset dir="${build.classes.dir}">
+                <include name="META-INF/services/**"/>
                 <include name="com/sun/tools/**/*"/>
 		<include name="jdk/internal/shellsupport/**/*"/>
                 <include name="jdk/internal/PreviewFeature*"/>
                 <include name="java/lang/**/*"/>
                 <include name="nbjavac/**"/>
             </fileset>
-			<fileset dir="${nb.javac.dir}">
-				<include name="README.md"/>
-				<include name="LICENSE.tx"/>
-				<include name="SECURITY.md"/>
-			</fileset>
+            <zipfileset src="${tools.dir}/compiler.jar" includes="META-INF/ct*/**"/>
+            <fileset dir="${nb.javac.dir}">
+                    <include name="README.md"/>
+                    <include name="LICENSE.tx"/>
+                    <include name="SECURITY.md"/>
+            </fileset>
         </jar>
         <delete file="${dist.jar}"/>
     </target>

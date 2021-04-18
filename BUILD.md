@@ -88,7 +88,7 @@ and you should be able to debug a test (for example `StringWrapperTest`) with fo
 ```bash
 $ JAVA_HOME=/jdk-8/ ant -f make/langtools/netbeans/nb-javac test \
     -Dincludes=**/StringWrapperTest* \
-    -Drun.jvmargs=-agentlib:jdwp=transport=dt_socket,server=y,address=5005,suspend=y
+    -Ddebug.jvmargs=-agentlib:jdwp=transport=dt_socket,server=y,address=5005,suspend=y
 ```
 
 Connect the NetBeans IDE to port 5005 and step through the `nb-javac`
