@@ -174,7 +174,12 @@ javax.tools.ToolProvider.getSystemTool($class, $module, $name)
 =>
 $class.cast(((java.util.function.Supplier<Object>) () -> {
     try {
-       Object v = javax.tools.ToolProvider.getSystemTool($class, $module, $name);
+       Object v;
+       try {
+            v = javax.tools.ToolProvider.getSystemTool($class, $module, $name);
+        } catch (LinkageError err) {
+            v = null;
+        }
        if (v == null) {
            v = Class.forName($name).newInstance();
        }
