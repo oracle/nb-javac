@@ -1,5 +1,12 @@
 # About nb-javac!
-"nb-javac" is a patched version of OpenJDK "javac", i.e., the Java compiler. This has long been part of NetBeans, providing a highly tuned Java compiler specifically for the Java editor i.e., parsing and lexing for features such as syntax coloring, code completion.
+
+**nb-javac** is a patched version of [OpenJDK](http://openjdk.java.net/) *javac* and
+available under the same [license](LICENSE.txt). All of the source files,
+and the binaries produced from them, are covered by the "Classpath exception".
+**nb-javac** has long been part of [NetBeans](http://netbeans.org),
+providing a highly tuned Java compiler
+specifically for the Java editor i.e., parsing and lexing for features such
+as syntax coloring and code completion.
 
 # Prerequisite
   - Git
