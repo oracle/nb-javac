@@ -519,9 +519,12 @@ public class DocCommentParser {
             nextChar();
         }
 
-        if (depth != 0) {
+
+        // depth < 0 will be caught and reported by ReferenceParser#parse
+        if (depth > 0) {
             handleError("dc.unterminated.signature", pos);
         }
+
 
         String sig = newString(pos, bp);
 
@@ -732,21 +735,9 @@ public class DocCommentParser {
      * Read general text content of an inline tag, including HTML entities and elements.
      * Matching pairs of { } are skipped; the text is terminated by the first
      * unmatched }. It is an error if the beginning of the next tag is detected.
-     * Nested tags are not permitted.
-     */
-    private List<DCTree> inlineContent() {
-        return inlineContent(false);
-    }
-
-    /**
-     * Read general text content of an inline tag, including HTML entities and elements.
-     * Matching pairs of { } are skipped; the text is terminated by the first
-     * unmatched }. It is an error if the beginning of the next tag is detected.
-     *
-     * @param allowNestedTags whether or not to allow nested tags
      */
     @SuppressWarnings("fallthrough")
-    private List<DCTree> inlineContent(boolean allowNestedTags) {
+    private List<DCTree> inlineContent() {
         ListBuffer<DCTree> trees = new ListBuffer<>();
 
         skipWhitespace();
@@ -790,9 +781,8 @@ public class DocCommentParser {
                     }
                     nextChar();
 
+                    if (ch == '@') {
 
-
-                    if (ch == '@' && allowNestedTags) {
                         addPendingText(trees, bp - 2);
                         trees.add(inlineTag());
                         textStart = bp;
@@ -1521,7 +1511,7 @@ public class DocCommentParser {
                             description = blockContent();
                             break;
                         case INLINE:
-                            description = inlineContent(true);
+                            description = inlineContent();
                             break;
                         default:
                             throw new IllegalArgumentException(kind.toString());

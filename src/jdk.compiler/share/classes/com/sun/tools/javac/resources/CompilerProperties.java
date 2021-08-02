@@ -1008,6 +1008,14 @@ public class CompilerProperties {
         public static final Error ConstExprReq = new Error("compiler", "const.expr.req");
         
         /**
+         * compiler.err.constant.label.not.compatible=\
+         *    constant label of type {0} is not compatible with switch selector type {1}
+         */
+        public static Error ConstantLabelNotCompatible(Type arg0, Type arg1) {
+            return new Error("compiler", "constant.label.not.compatible", arg0, arg1);
+        }
+        
+        /**
          * compiler.err.cont.outside.loop=\
          *    continue outside of loop
          */
@@ -1101,7 +1109,7 @@ public class CompilerProperties {
         
         /**
          * compiler.err.dc.ref.bad.parens=\
-         *    '')'' missing in reference
+         *    unexpected text after parenthesis
          */
         public static final Error DcRefBadParens = new Error("compiler", "dc.ref.bad.parens");
         
@@ -1252,6 +1260,12 @@ public class CompilerProperties {
         public static Error DuplicateRequires(Symbol arg0) {
             return new Error("compiler", "duplicate.requires", arg0);
         }
+        
+        /**
+         * compiler.err.duplicate.total.pattern=\
+         *    duplicate total pattern
+         */
+        public static final Error DuplicateTotalPattern = new Error("compiler", "duplicate.total.pattern");
         
         /**
          * compiler.err.duplicate.uses=\
@@ -1551,6 +1565,18 @@ public class CompilerProperties {
         }
         
         /**
+         * compiler.err.flows.through.from.pattern=\
+         *    illegal fall-through from a pattern
+         */
+        public static final Error FlowsThroughFromPattern = new Error("compiler", "flows.through.from.pattern");
+        
+        /**
+         * compiler.err.flows.through.to.pattern=\
+         *    illegal fall-through to a pattern
+         */
+        public static final Error FlowsThroughToPattern = new Error("compiler", "flows.through.to.pattern");
+        
+        /**
          * compiler.err.foreach.not.applicable.to.type=\
          *    for-each not applicable to expression type\n\
          *    required: {1}\n\
@@ -1572,13 +1598,13 @@ public class CompilerProperties {
         
         /**
          * compiler.err.fp.number.too.large=\
-         *    floating point number too large
+         *    floating-point number too large
          */
         public static final Error FpNumberTooLarge = new Error("compiler", "fp.number.too.large");
         
         /**
          * compiler.err.fp.number.too.small=\
-         *    floating point number too small
+         *    floating-point number too small
          */
         public static final Error FpNumberTooSmall = new Error("compiler", "fp.number.too.small");
         
@@ -1898,7 +1924,7 @@ public class CompilerProperties {
         
         /**
          * compiler.err.instanceof.pattern.no.subtype=\
-         *    pattern type {0} is a subtype of expression type {1}
+         *    expression type {0} is a subtype of pattern type {1}
          */
         public static Error InstanceofPatternNoSubtype(Type arg0, Type arg1) {
             return new Error("compiler", "instanceof.pattern.no.subtype", arg0, arg1);
@@ -2257,7 +2283,8 @@ public class CompilerProperties {
         
         /**
          * compiler.err.is.preview=\
-         *    {0} is an API that is part of a preview feature
+         *    {0} is a preview API and is disabled by default.\n\
+         *    (use --enable-preview to enable preview APIs)
          */
         public static Error IsPreview(Symbol arg0) {
             return new Error("compiler", "is.preview", arg0);
@@ -2411,7 +2438,7 @@ public class CompilerProperties {
         
         /**
          * compiler.err.malformed.fp.lit=\
-         *    malformed floating point literal
+         *    malformed floating-point literal
          */
         public static final Error MalformedFpLit = new Error("compiler", "malformed.fp.lit");
         
@@ -2801,6 +2828,12 @@ public class CompilerProperties {
         public static final Error NotExhaustive = new Error("compiler", "not.exhaustive");
         
         /**
+         * compiler.err.not.exhaustive.statement=\
+         *    the switch statement does not cover all possible input values
+         */
+        public static final Error NotExhaustiveStatement = new Error("compiler", "not.exhaustive.statement");
+        
+        /**
          * compiler.err.not.in.module.on.module.source.path=\
          *    not in a module on the module source path
          */
@@ -3067,6 +3100,18 @@ public class CompilerProperties {
         }
         
         /**
+         * compiler.err.pattern.dominated=\
+         *    this case label is dominated by a preceding case label
+         */
+        public static final Error PatternDominated = new Error("compiler", "pattern.dominated");
+        
+        /**
+         * compiler.err.pattern.expected=\
+         *    type pattern expected
+         */
+        public static final Error PatternExpected = new Error("compiler", "pattern.expected");
+        
+        /**
          * compiler.err.pkg.annotations.sb.in.package-info.java=\
          *    package annotations should be in file package-info.java
          */
@@ -3114,8 +3159,8 @@ public class CompilerProperties {
         
         /**
          * compiler.err.preview.feature.disabled.classfile=\
-         *   classfile for {0} uses preview features of Java SE {1}.\n\
-         *   (use --enable-preview to allow loading of classfiles which contain preview features)
+         *   class file for {0} uses preview features of Java SE {1}.\n\
+         *   (use --enable-preview to allow loading of class files which contain preview features)
          */
         public static Error PreviewFeatureDisabledClassfile(JavaFileObject arg0, String arg1) {
             return new Error("compiler", "preview.feature.disabled.classfile", arg0, arg1);
@@ -3655,12 +3700,6 @@ public class CompilerProperties {
         public static final Error SwitchMixingCaseTypes = new Error("compiler", "switch.mixing.case.types");
         
         /**
-         * compiler.err.switch.null.not.allowed=\
-         *    null label in case is not allowed
-         */
-        public static final Error SwitchNullNotAllowed = new Error("compiler", "switch.null.not.allowed");
-        
-        /**
          * compiler.err.this.as.identifier=\
          *    as of release 8, ''this'' is allowed as the parameter name for the receiver type only\n\
          *    which has to be the first parameter, and cannot be a lambda parameter
@@ -3686,6 +3725,12 @@ public class CompilerProperties {
         public static Error TooManyPatchedModules(Set<? extends String> arg0) {
             return new Error("compiler", "too.many.patched.modules", arg0);
         }
+        
+        /**
+         * compiler.err.total.pattern.and.default=\
+         *    switch has both a total pattern and a default label
+         */
+        public static final Error TotalPatternAndDefault = new Error("compiler", "total.pattern.and.default");
         
         /**
          * compiler.err.try.resource.may.not.be.assigned=\
@@ -4172,6 +4217,14 @@ public class CompilerProperties {
         }
         
         /**
+         * compiler.warn.declared.using.preview=\
+         *    {0} {1} is declared using a preview feature, which may be removed in a future release.
+         */
+        public static Warning DeclaredUsingPreview(KindName arg0, Symbol arg1) {
+            return new Warning("compiler", "declared.using.preview", arg0, arg1);
+        }
+        
+        /**
          * compiler.warn.deprecated.annotation.has.no.effect=\
          *    @Deprecated annotation has no effect on this {0} declaration
          */
@@ -4384,10 +4437,18 @@ public class CompilerProperties {
         
         /**
          * compiler.warn.is.preview=\
-         *    {0} is an API that is part of a preview feature
+         *    {0} is a preview API and may be removed in a future release.
          */
         public static Warning IsPreview(Symbol arg0) {
             return new Warning("compiler", "is.preview", arg0);
+        }
+        
+        /**
+         * compiler.warn.is.preview.reflective=\
+         *    {0} is a reflective preview API and may be removed in a future release.
+         */
+        public static Warning IsPreviewReflective(Symbol arg0) {
+            return new Warning("compiler", "is.preview.reflective", arg0);
         }
         
         /**
@@ -4704,7 +4765,7 @@ public class CompilerProperties {
         
         /**
          * compiler.warn.preview.feature.use.classfile=\
-         *   classfile for {0} uses preview features of Java SE {1}.
+         *   class file for {0} uses preview features of Java SE {1}.
          */
         public static Warning PreviewFeatureUseClassfile(JavaFileObject arg0, String arg1) {
             return new Warning("compiler", "preview.feature.use.classfile", arg0, arg1);
@@ -4994,6 +5055,12 @@ public class CompilerProperties {
         public static Warning StaticNotQualifiedByType(KindName arg0, Symbol arg1) {
             return new Warning("compiler", "static.not.qualified.by.type", arg0, arg1);
         }
+        
+        /**
+         * compiler.warn.strictfp=\
+         *    as of release 17, all floating-point expressions are evaluated strictly and ''strictfp'' is not required
+         */
+        public static final Warning Strictfp = new Warning("compiler", "strictfp");
         
         /**
          * compiler.warn.sun.proprietary=\
@@ -5318,63 +5385,67 @@ public class CompilerProperties {
         
         /**
          * compiler.note.preview.filename=\
-         *    {0} uses preview language features.
+         *    {0} uses preview features of Java SE {1}.
          */
-        public static Note PreviewFilename(File arg0) {
-            return new Note("compiler", "preview.filename", arg0);
+        public static Note PreviewFilename(File arg0, Source arg1) {
+            return new Note("compiler", "preview.filename", arg0, arg1);
         }
         
         /**
          * compiler.note.preview.filename=\
-         *    {0} uses preview language features.
+         *    {0} uses preview features of Java SE {1}.
          */
-        public static Note PreviewFilename(JavaFileObject arg0) {
-            return new Note("compiler", "preview.filename", arg0);
+        public static Note PreviewFilename(JavaFileObject arg0, Source arg1) {
+            return new Note("compiler", "preview.filename", arg0, arg1);
         }
         
         /**
          * compiler.note.preview.filename=\
-         *    {0} uses preview language features.
+         *    {0} uses preview features of Java SE {1}.
          */
-        public static Note PreviewFilename(Path arg0) {
-            return new Note("compiler", "preview.filename", arg0);
+        public static Note PreviewFilename(Path arg0, Source arg1) {
+            return new Note("compiler", "preview.filename", arg0, arg1);
         }
         
         /**
          * compiler.note.preview.filename.additional=\
-         *    {0} has additional uses of preview language features.
+         *    {0} has additional uses of preview features of Java SE {1}.
          */
-        public static Note PreviewFilenameAdditional(File arg0) {
-            return new Note("compiler", "preview.filename.additional", arg0);
+        public static Note PreviewFilenameAdditional(File arg0, Source arg1) {
+            return new Note("compiler", "preview.filename.additional", arg0, arg1);
         }
         
         /**
          * compiler.note.preview.filename.additional=\
-         *    {0} has additional uses of preview language features.
+         *    {0} has additional uses of preview features of Java SE {1}.
          */
-        public static Note PreviewFilenameAdditional(JavaFileObject arg0) {
-            return new Note("compiler", "preview.filename.additional", arg0);
+        public static Note PreviewFilenameAdditional(JavaFileObject arg0, Source arg1) {
+            return new Note("compiler", "preview.filename.additional", arg0, arg1);
         }
         
         /**
          * compiler.note.preview.filename.additional=\
-         *    {0} has additional uses of preview language features.
+         *    {0} has additional uses of preview features of Java SE {1}.
          */
-        public static Note PreviewFilenameAdditional(Path arg0) {
-            return new Note("compiler", "preview.filename.additional", arg0);
+        public static Note PreviewFilenameAdditional(Path arg0, Source arg1) {
+            return new Note("compiler", "preview.filename.additional", arg0, arg1);
         }
         
         /**
          * compiler.note.preview.plural=\
-         *    Some input files use preview language features.
+         *    Some input files use preview features of Java SE {0}.
          */
-        public static final Note PreviewPlural = new Note("compiler", "preview.plural");
+        public static Note PreviewPlural(Source arg0) {
+            return new Note("compiler", "preview.plural", arg0);
+        }
         
         /**
          * compiler.note.preview.plural.additional=\
-         *    Some input files additionally use preview language features.
+         *    Some input files additionally use preview features of Java SE {0}.
          */
-        public static final Note PreviewPluralAdditional = new Note("compiler", "preview.plural.additional");
+        public static Note PreviewPluralAdditional(Source arg0) {
+            return new Note("compiler", "preview.plural.additional", arg0);
+        }
         
         /**
          * compiler.note.preview.recompile=\
@@ -6820,6 +6891,12 @@ public class CompilerProperties {
         public static final Fragment FeatureAnnotationsAfterTypeParams = new Fragment("compiler", "feature.annotations.after.type.params");
         
         /**
+         * compiler.misc.feature.case.null=\
+         *    null in switch cases
+         */
+        public static final Fragment FeatureCaseNull = new Fragment("compiler", "feature.case.null");
+        
+        /**
          * compiler.misc.feature.default.methods=\
          *    default methods
          */
@@ -6908,6 +6985,12 @@ public class CompilerProperties {
          *    pattern matching in instanceof
          */
         public static final Fragment FeaturePatternMatchingInstanceof = new Fragment("compiler", "feature.pattern.matching.instanceof");
+        
+        /**
+         * compiler.misc.feature.pattern.switch=\
+         *    patterns in switch statements
+         */
+        public static final Fragment FeaturePatternSwitch = new Fragment("compiler", "feature.pattern.switch");
         
         /**
          * compiler.misc.feature.private.intf.methods=\
@@ -7008,6 +7091,12 @@ public class CompilerProperties {
         public static Fragment FileDoesntContainClass(Name arg0) {
             return new Fragment("compiler", "file.doesnt.contain.class", arg0);
         }
+        
+        /**
+         * compiler.misc.guard=\
+         *    a guard
+         */
+        public static final Fragment Guard = new Fragment("compiler", "guard");
         
         /**
          * compiler.misc.illegal.signature=\

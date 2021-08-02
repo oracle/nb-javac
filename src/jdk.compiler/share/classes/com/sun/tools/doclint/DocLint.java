@@ -53,7 +53,6 @@ public abstract class DocLint implements Plugin {
 
     public static final String XMSGS_OPTION = "-Xmsgs";
     public static final String XMSGS_CUSTOM_PREFIX = "-Xmsgs:";
-    public static final String XHTML_VERSION_PREFIX = "-XhtmlVersion:";
     public static final String XCHECK_PACKAGE = "-XcheckPackage:";
 
     public abstract boolean isValidOption(String opt);
@@ -97,7 +96,6 @@ public abstract class DocLint implements Plugin {
             // passively accept all "plausible" options
             return s.equals(XMSGS_OPTION)
                     || s.startsWith(XMSGS_CUSTOM_PREFIX)
-                    || s.startsWith(XHTML_VERSION_PREFIX)
                     || s.startsWith(XCHECK_PACKAGE);
         }
     }

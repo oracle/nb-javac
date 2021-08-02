@@ -124,8 +124,10 @@ public class JavacRoundEnvironment implements RoundEnvironment {
         throwIfNotAnnotation(a);
 
         Set<Element> result = Collections.emptySet();
-        @SuppressWarnings("preview")
+
+
         AnnotationSetScanner scanner = new AnnotationSetScanner(result);
+
 
         for (Element element : rootElements)
             result = scanner.scan(element, a);
@@ -145,8 +147,12 @@ public class JavacRoundEnvironment implements RoundEnvironment {
         }
 
         Set<Element> result = Collections.emptySet();
-        @SuppressWarnings("preview")
+
+
         AnnotationSetMultiScanner scanner = new AnnotationSetMultiScanner(result);
+
+
+
 
         for (Element element : rootElements)
             result = scanner.scan(element, annotationSet);
@@ -155,7 +161,6 @@ public class JavacRoundEnvironment implements RoundEnvironment {
     }
 
     // Could be written as a local class inside getElementsAnnotatedWith
-    @SuppressWarnings("preview")
     private class AnnotationSetScanner extends
         ElementScanner14<Set<Element>, TypeElement> {
         // Insertion-order preserving set
@@ -191,7 +196,6 @@ public class JavacRoundEnvironment implements RoundEnvironment {
     }
 
     // Could be written as a local class inside getElementsAnnotatedWithAny
-    @SuppressWarnings("preview")
     private class AnnotationSetMultiScanner extends
         ElementScanner14<Set<Element>, Set<TypeElement>> {
         // Insertion-order preserving set

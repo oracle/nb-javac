@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1999, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -30,7 +30,11 @@ package com.sun.tools.javac.comp;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+
 import java.util.stream.Collectors;
+
+import java.util.stream.StreamSupport;
+
 
 import com.sun.source.tree.LambdaExpressionTree.BodyKind;
 import com.sun.tools.javac.code.*;
@@ -39,21 +43,24 @@ import com.sun.tools.javac.code.Source.Feature;
 import com.sun.tools.javac.resources.CompilerProperties.Errors;
 import com.sun.tools.javac.resources.CompilerProperties.Warnings;
 import com.sun.tools.javac.tree.*;
+import com.sun.tools.javac.tree.TreeInfo.PatternPrimaryType;
 import com.sun.tools.javac.util.*;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.JCDiagnostic.Error;
 import com.sun.tools.javac.util.JCDiagnostic.Warning;
 
-import com.sun.tools.javac.code.Kinds.Kind;
 import com.sun.tools.javac.code.Symbol.*;
 import com.sun.tools.javac.tree.JCTree.*;
 
 import static com.sun.tools.javac.code.Flags.*;
 import static com.sun.tools.javac.code.Flags.BLOCK;
 import static com.sun.tools.javac.code.Kinds.Kind.*;
+import com.sun.tools.javac.code.Type.TypeVar;
 import static com.sun.tools.javac.code.TypeTag.BOOLEAN;
 import static com.sun.tools.javac.code.TypeTag.VOID;
+import com.sun.tools.javac.resources.CompilerProperties.Fragments;
 import static com.sun.tools.javac.tree.JCTree.Tag.*;
+import com.sun.tools.javac.util.JCDiagnostic.Fragment;
 
 /** This pass implements dataflow analysis for Java programs though
  *  different AST visitor steps. Liveness analysis (see AliveAnalyzer) checks that
@@ -678,19 +685,19 @@ public class Flow {
             ListBuffer<PendingExit> prevPendingExits = pendingExits;
             pendingExits = new ListBuffer<>();
             scan(tree.selector);
-            boolean hasDefault = false;
+            boolean exhaustiveSwitch = tree.patternSwitch ||
+                                       tree.cases.stream()
+                                                 .flatMap(c -> c.labels.stream())
+                                                 .anyMatch(l -> TreeInfo.isNull(l));
+            Set<Symbol> constants = exhaustiveSwitch ? new HashSet<>() : null;
             for (List<JCCase> l = tree.cases; l.nonEmpty(); l = l.tail) {
                 alive = Liveness.ALIVE;
                 JCCase c = l.head;
-                if (c.pats.isEmpty())
-                    hasDefault = true;
-                else {
-                    for (JCExpression pat : c.pats) {
-                        scan(pat);
-                    }
+                for (JCCaseLabel pat : c.labels) {
+                    scan(pat);
+                    handleConstantCaseLabel(constants, pat);
                 }
                 scanStats(c.stats);
-                c.completesNormally = alive != Liveness.DEAD;
                 if (alive != Liveness.DEAD && c.caseKind == JCCase.RULE) {
                     scanSyntheticBreak(make, tree);
                     alive = Liveness.DEAD;
@@ -703,7 +710,12 @@ public class Flow {
                                 l.tail.head.pos(),
                                 Warnings.PossibleFallThroughIntoCase);
             }
-            if (!hasDefault) {
+            if (!tree.hasTotalPattern && exhaustiveSwitch &&
+                !TreeInfo.isErrorEnumSwitch(tree.selector, tree.cases) &&
+                (constants == null || !isExhaustive(tree.selector.type, constants))) {
+                log.error(tree, Errors.NotExhaustiveStatement);
+            }
+            if (!tree.hasTotalPattern) {
                 alive = Liveness.ALIVE;
             }
             alive = alive.or(resolveBreaks(tree, prevPendingExits));
@@ -714,33 +726,14 @@ public class Flow {
             ListBuffer<PendingExit> prevPendingExits = pendingExits;
             pendingExits = new ListBuffer<>();
             scan(tree.selector);
-            Set<Object> constants = null;
-            TypeSymbol selectorSym = tree.selector.type.tsym;
-            if ((selectorSym.flags() & ENUM) != 0) {
-                constants = new HashSet<>();
-                Filter<Symbol> enumConstantFilter =
-                        s -> (s.flags() & ENUM) != 0 && s.kind == Kind.VAR;
-                for (Symbol s : selectorSym.members().getSymbols(enumConstantFilter)) {
-                    constants.add(s.name);
-                }
-            }
-            boolean hasDefault = false;
+            Set<Symbol> constants = new HashSet<>();
             Liveness prevAlive = alive;
             for (List<JCCase> l = tree.cases; l.nonEmpty(); l = l.tail) {
                 alive = Liveness.ALIVE;
                 JCCase c = l.head;
-                if (c.pats.isEmpty())
-                    hasDefault = true;
-                else {
-                    for (JCExpression pat : c.pats) {
-                        scan(pat);
-                        if (constants != null) {
-                            if (pat.hasTag(IDENT))
-                                constants.remove(((JCIdent) pat).name);
-                            if (pat.type != null)
-                                constants.remove(pat.type.constValue());
-                        }
-                    }
+                for (JCCaseLabel pat : c.labels) {
+                    scan(pat);
+                    handleConstantCaseLabel(constants, pat);
                 }
                 scanStats(c.stats);
                 if (alive == Liveness.ALIVE) {
@@ -752,20 +745,97 @@ public class Flow {
                                   Errors.SwitchExpressionCompletesNormally);
                     }
                 }
-                c.completesNormally = alive != Liveness.DEAD;
             }
-            if ((constants == null || !constants.isEmpty()) && !hasDefault) {
+            if (!tree.hasTotalPattern && !TreeInfo.isErrorEnumSwitch(tree.selector, tree.cases) &&
+                !isExhaustive(tree.selector.type, constants)) {
                 log.error(tree, Errors.NotExhaustive);
             }
             alive = prevAlive;
             alive = alive.or(resolveYields(tree, prevPendingExits));
         }
 
+        private void handleConstantCaseLabel(Set<Symbol> constants, JCCaseLabel pat) {
+            if (constants != null) {
+                if (pat.isExpression()) {
+                    JCExpression expr = (JCExpression) pat;
+                    if (expr.hasTag(IDENT) && ((JCIdent) expr).sym.isEnum())
+                        constants.add(((JCIdent) expr).sym);
+                } else if (pat.isPattern()) {
+                    PatternPrimaryType patternType = TreeInfo.primaryPatternType((JCPattern) pat);
+
+                    if (patternType.unconditional()) {
+                        constants.add(patternType.type().tsym);
+                    }
+                }
+            }
+        }
+
+        private void transitiveCovers(Set<Symbol> covered) {
+            List<Symbol> todo = List.from(covered);
+            while (todo.nonEmpty()) {
+                Symbol sym = todo.head;
+                todo = todo.tail;
+                switch (sym.kind) {
+                    case VAR: {
+                        Iterable<Symbol> constants = sym.owner
+                                                        .members()
+                                                        .getSymbols(s -> s.isEnum() &&
+                                                                         s.kind == VAR);
+                        boolean hasAll = StreamSupport.stream(constants.spliterator(), false)
+                                                      .allMatch(covered::contains);
+
+                        if (hasAll && covered.add(sym.owner)) {
+                            todo = todo.prepend(sym.owner);
+                        }
+                    }
+                    break;
+
+                    case TYP: {
+                        for (Type sup : types.directSupertypes(sym.type)) {
+                            if (sup.tsym.kind == TYP && sup.tsym.isAbstract() && sup.tsym.isSealed()) {
+                                boolean hasAll = ((ClassSymbol) sup.tsym).permitted
+                                                                         .stream()
+                                                                         .allMatch(covered::contains);
+
+                                if (hasAll && covered.add(sup.tsym)) {
+                                    todo = todo.prepend(sup.tsym);
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
+        private boolean isExhaustive(Type seltype, Set<Symbol> covered) {
+            transitiveCovers(covered);
+            boolean isExhaustive = false;
+            switch (seltype.getTag()) {
+                case CLASS: {
+                    if (seltype.isCompound()) {
+                        if (seltype.isIntersection()) {
+                            isExhaustive = ((Type.IntersectionClassType) seltype).getComponents().stream().anyMatch(t -> isExhaustive(t, covered));
+                        }
+                        isExhaustive = false;
+                    }
+                    isExhaustive = covered.contains(seltype.tsym);
+                }
+                break;
+                case TYPEVAR:
+                    isExhaustive = isExhaustive(((TypeVar) seltype).getUpperBound(), covered);
+                    break;
+                default:
+                    isExhaustive = false;
+            }
+            return isExhaustive;
+        }
+
         public void visitTry(JCTry tree) {
             ListBuffer<PendingExit> prevPendingExits = pendingExits;
             pendingExits = new ListBuffer<>();
             for (JCTree resource : tree.resources) {
-                if (resource instanceof JCVariableDecl) {
+               if (resource instanceof JCVariableDecl) {
                     JCVariableDecl vdecl = (JCVariableDecl) resource;
                     visitVarDef(vdecl);
                 } else if (resource instanceof JCExpression) {
@@ -959,7 +1029,7 @@ public class Flow {
             for (PendingExit exit = pendingExits.next();
                  exit != null;
                  exit = pendingExits.next()) {
-                if (exit instanceof ThrownPendingExit) {
+		if (exit instanceof ThrownPendingExit) {
                     ThrownPendingExit thrownExit = (ThrownPendingExit) exit;
                     if (classDef != null &&
                         classDef.pos == exit.tree.pos) {
@@ -1217,7 +1287,7 @@ public class Flow {
             scan(selector);
             for (List<JCCase> l = cases; l.nonEmpty(); l = l.tail) {
                 JCCase c = l.head;
-                scan(c.pats);
+                scan(c.labels);
                 scan(c.stats);
             }
             if (tree.hasTag(SWITCH_EXPRESSION)) {
@@ -1548,6 +1618,10 @@ public class Flow {
     class SnippetAliveAnalyzer extends AliveAnalyzer {
         @Override
         public void visitClassDef(JCClassDecl tree) {
+            //skip
+        }
+        @Override
+        public void visitLambda(JCLambda tree) {
             //skip
         }
         public boolean isAlive() {
@@ -2382,52 +2456,58 @@ public class Flow {
         }
 
         public void visitSwitch(JCSwitch tree) {
-            handleSwitch(tree, tree.selector, tree.cases);
+            handleSwitch(tree, tree.selector, tree.cases, tree.hasTotalPattern);
         }
 
         public void visitSwitchExpression(JCSwitchExpression tree) {
-            handleSwitch(tree, tree.selector, tree.cases);
+            handleSwitch(tree, tree.selector, tree.cases, tree.hasTotalPattern);
         }
 
-        private void handleSwitch(JCTree tree, JCExpression selector, List<JCCase> cases) {
+        private void handleSwitch(JCTree tree, JCExpression selector,
+                                  List<JCCase> cases, boolean hasTotalPattern) {
             ListBuffer<PendingExit> prevPendingExits = pendingExits;
             pendingExits = new ListBuffer<>();
             int nextadrPrev = nextadr;
             scanExpr(selector);
             final Bits initsSwitch = new Bits(inits);
             final Bits uninitsSwitch = new Bits(uninits);
-            boolean hasDefault = false;
             for (List<JCCase> l = cases; l.nonEmpty(); l = l.tail) {
                 inits.assign(initsSwitch);
                 uninits.assign(uninits.andSet(uninitsSwitch));
                 JCCase c = l.head;
-                if (c.pats.isEmpty()) {
-                    hasDefault = true;
-                } else {
-                    for (JCExpression pat : c.pats) {
-                        scanExpr(pat);
+                for (JCCaseLabel pat : c.labels) {
+                    scan(pat);
+                    if (inits.isReset()) {
+                        inits.assign(initsWhenTrue);
+                        uninits.assign(uninitsWhenTrue);
                     }
                 }
-                if (hasDefault) {
-                    inits.assign(initsSwitch);
-                    uninits.assign(uninits.andSet(uninitsSwitch));
+                if (l.head.stats.isEmpty() &&
+                    l.tail.nonEmpty() &&
+                    l.tail.head.labels.size() == 1 &&
+                    l.tail.head.labels.head.isExpression() &&
+                    TreeInfo.isNull(l.tail.head.labels.head)) {
+                    //handling:
+                    //case Integer i:
+                    //case null:
+                    //joining these two cases together - processing Integer i pattern,
+                    //but statements from case null:
+                    l = l.tail;
+                    c = l.head;
                 }
                 scan(c.stats);
                 if (c.completesNormally && c.caseKind == JCCase.RULE) {
                     scanSyntheticBreak(make, tree);
                 }
                 addVars(c.stats, initsSwitch, uninitsSwitch);
-                if (!hasDefault) {
-                    inits.assign(initsSwitch);
-                    uninits.assign(uninits.andSet(uninitsSwitch));
-                }
                 // Warn about fall-through if lint switch fallthrough enabled.
             }
-            if (!hasDefault) {
+            if (!hasTotalPattern) {
                 if (tree.hasTag(SWITCH_EXPRESSION)) {
                     markDead();
                 } else {
-                    inits.andSet(initsSwitch);
+                    inits.assign(initsSwitch);
+                    uninits.assign(uninits.andSet(uninitsSwitch));
                 }
             }
             if (tree.hasTag(SWITCH_EXPRESSION)) {
@@ -2524,7 +2604,7 @@ public class Flow {
                     // versus finally!
                     while (exits.nonEmpty()) {
                         PendingExit exit = exits.next();
-                        if (exit instanceof AssignPendingExit) {
+                         if (exit instanceof AssignPendingExit) {
                             ((AssignPendingExit) exit).exit_inits.orSet(inits);
                             ((AssignPendingExit) exit).exit_uninits.andSet(uninits);
                         }
@@ -2885,6 +2965,7 @@ public class Flow {
                             }
                             break;
                         }
+                    case GUARDPATTERN:
                     case LAMBDA:
                         if ((sym.flags() & (EFFECTIVELY_FINAL | FINAL)) == 0) {
                            reportEffectivelyFinalError(pos, sym);
@@ -2908,6 +2989,7 @@ public class Flow {
                                 reportInnerClsNeedsFinalError(tree, sym);
                                 break;
                             }
+                        case GUARDPATTERN:
                         case LAMBDA:
                             reportEffectivelyFinalError(tree, sym);
                     }
@@ -2916,8 +2998,21 @@ public class Flow {
         }
 
         void reportEffectivelyFinalError(DiagnosticPosition pos, Symbol sym) {
-            String subKey = currentTree.hasTag(LAMBDA) ?
-                  "lambda"  : "inner.cls";
+            Fragment subKey = null;
+		switch (currentTree.getTag()) {
+		        case LAMBDA: 
+				subKey = Fragments.Lambda;
+				break;
+
+		        case GUARDPATTERN:
+				subKey = Fragments.Guard;
+				break;
+		        case CLASSDEF:
+				subKey = Fragments.InnerCls;
+				break;
+		        default: 
+				throw new AssertionError("Unexpected tree kind: " + currentTree.getTag());
+            }
             log.error(pos, Errors.CantRefNonEffectivelyFinalVar(sym, diags.fragment(subKey)));
         }
 
@@ -2948,6 +3043,18 @@ public class Flow {
             try {
                 currentTree = tree;
                 super.visitLambda(tree);
+            } finally {
+                currentTree = prevTree;
+            }
+        }
+
+        @Override
+        public void visitGuardPattern(JCGuardPattern tree) {
+            scan(tree.patt);
+            JCTree prevTree = currentTree;
+            try {
+                currentTree = tree;
+                scan(tree.expr);
             } finally {
                 currentTree = prevTree;
             }

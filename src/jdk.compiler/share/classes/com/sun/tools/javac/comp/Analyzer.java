@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Kinds.Kind;
 import com.sun.tools.javac.code.Source;
@@ -566,14 +567,17 @@ public class Analyzer {
             log.useSource(rewriting.env.toplevel.getSourceFile());
 
             JCStatement treeToAnalyze = (JCStatement)rewriting.originalTree;
+            JCTree wrappedTree = null;
+
             if (rewriting.env.info.scope.owner.kind == Kind.TYP) {
                 //add a block to hoist potential dangling variable declarations
                 treeToAnalyze = make.at(Position.NOPOS)
                                     .Block(Flags.SYNTHETIC, List.of((JCStatement)rewriting.originalTree));
+                wrappedTree = rewriting.originalTree;
             }
 
             //TODO: to further refine the analysis, try all rewriting combinations
-            deferredAttr.attribSpeculative(treeToAnalyze, rewriting.env, attr.statInfo, new TreeRewriter(rewriting),
+            deferredAttr.attribSpeculative(treeToAnalyze, rewriting.env, attr.statInfo, new TreeRewriter(rewriting, wrappedTree),
                     () -> rewriting.diagHandler(), AttributionMode.ANALYZER, argumentAttr.withLocalCacheContext());
             rewriting.analyzer.process(rewriting.oldTree, rewriting.replacement, rewriting.erroneous);
         } catch (Throwable ex) {
@@ -785,9 +789,11 @@ public class Analyzer {
    class TreeRewriter extends AnalyzerCopier {
 
         RewritingContext rewriting;
+        JCTree wrappedTree;
 
-        TreeRewriter(RewritingContext rewriting) {
+        TreeRewriter(RewritingContext rewriting, JCTree wrappedTree) {
             this.rewriting = rewriting;
+            this.wrappedTree = wrappedTree;
         }
 
         @Override
@@ -800,5 +806,19 @@ public class Analyzer {
             }
             return newTree;
         }
+
+        @Override
+        public JCTree visitVariable(VariableTree node, Void p) {
+            JCTree result = super.visitVariable(node, p);
+            if (node == wrappedTree) {
+                //The current tree is a field and has been wrapped by a block, so it effectivelly
+                //became local variable. If it has some modifiers (except for final), an error
+                //would be reported, causing the whole rewrite to fail. Removing the non-final
+                //modifiers from the variable here:
+                ((JCVariableDecl) result).mods.flags &= Flags.FINAL;
+            }
+            return result;
+        }
+
     }
 }

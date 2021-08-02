@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2002, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -108,7 +108,12 @@ public enum Source {
     /**
       * 16, tbd
       */
-    JDK16("16");
+    JDK16("16"),
+
+    /**
+      * 17, tbd
+      */
+    JDK17("17");
 
     private static final Context.Key<Source> sourceKey = new Context.Key<>();
 
@@ -159,6 +164,8 @@ public enum Source {
     }
 
     public Target requiredTarget() {
+
+	if (this.compareTo(JDK17) >= 0) return Target.JDK1_17;
         if (this.compareTo(JDK16) >= 0) return Target.JDK1_16;
         if (this.compareTo(JDK15) >= 0) return Target.JDK1_15;
         if (this.compareTo(JDK14) >= 0) return Target.JDK1_14;
@@ -173,6 +180,7 @@ public enum Source {
         if (this.compareTo(JDK5) >= 0) return Target.JDK1_5;
         if (this.compareTo(JDK1_4) >= 0) return Target.JDK1_4;
         return Target.JDK1_1;
+
     }
 
     /**
@@ -216,7 +224,10 @@ public enum Source {
         PATTERN_MATCHING_IN_INSTANCEOF(JDK16, Fragments.FeaturePatternMatchingInstanceof, DiagKind.NORMAL),
         REIFIABLE_TYPES_INSTANCEOF(JDK16, Fragments.FeatureReifiableTypesInstanceof, DiagKind.PLURAL),
         RECORDS(JDK16, Fragments.FeatureRecords, DiagKind.PLURAL),
-        SEALED_CLASSES(JDK16, Fragments.FeatureSealedClasses, DiagKind.PLURAL),
+        SEALED_CLASSES(JDK17, Fragments.FeatureSealedClasses, DiagKind.PLURAL),
+        CASE_NULL(JDK17, Fragments.FeatureCaseNull, DiagKind.NORMAL),
+        PATTERN_SWITCH(JDK17, Fragments.FeaturePatternSwitch, DiagKind.PLURAL),
+        REDUNDANT_STRICTFP(JDK17),
         ;
 
         enum DiagKind {
@@ -279,6 +290,7 @@ public enum Source {
     }
 
     public static SourceVersion toSourceVersion(Source source) {
+
         switch(source) {
         case JDK1_2:
             return RELEASE_2;
@@ -310,8 +322,12 @@ public enum Source {
             return RELEASE_15;
         case JDK16:
             return RELEASE_16;
+	case JDK17:
+            return RELEASE_17;
+
         default:
             return null;
         }
+
     }
 }

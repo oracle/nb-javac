@@ -50,7 +50,7 @@ import static javax.lang.model.SourceVersion.*;
  * @since 16
  */
 
-@SupportedSourceVersion(RELEASE_16)
+@SupportedSourceVersion(RELEASE_17)
 
 public abstract class AbstractElementVisitor14<R, P> extends AbstractElementVisitor9<R, P> {
     /**
