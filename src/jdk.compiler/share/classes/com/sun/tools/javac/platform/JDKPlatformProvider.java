@@ -239,8 +239,8 @@ public class JDKPlatformProvider implements PlatformProvider {
 
                 @Override
                 public String inferBinaryName(Location location, JavaFileObject file) {
-                    if (file instanceof SigJavaFileObject sigJavaFileObject) {
-                        file = sigJavaFileObject.getDelegate();
+                   if (file instanceof SigJavaFileObject) {
+                        file = ((SigJavaFileObject) file).getDelegate();
                     }
                     return super.inferBinaryName(location, file);
                 }

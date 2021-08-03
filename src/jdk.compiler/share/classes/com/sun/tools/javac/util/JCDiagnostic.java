@@ -287,8 +287,8 @@ public class JCDiagnostic implements Diagnostic<JavaFileObject> {
                 //replace all nested FragmentKey with full-blown JCDiagnostic objects
                 return DiagnosticInfo.of(diagnosticInfo.type, diagnosticInfo.prefix, diagnosticInfo.code,
                         Stream.of(diagnosticInfo.args).map(o -> {
-                            return (o instanceof Fragment frag) ?
-                                    fragment(frag) : o;
+                            return (o instanceof Fragment) ?
+                                    fragment((Fragment)o) : o;
                         }).toArray());
             }
 

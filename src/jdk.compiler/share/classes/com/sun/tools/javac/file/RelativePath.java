@@ -73,7 +73,9 @@ public abstract class RelativePath implements Comparable<RelativePath> {
 
     @Override
     public boolean equals(Object other) {
-        return (other instanceof RelativePath relativePath) && path.equals(relativePath.path);
+        if (!(other instanceof RelativePath))
+            return false;
+         return path.equals(((RelativePath) other).path);
     }
 
     @Override

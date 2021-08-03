@@ -187,9 +187,13 @@ public interface PoolConstant {
 
             @Override
             public boolean equals(Object obj) {
-                return (obj instanceof BsmKey key)
-                        && Objects.equals(bsmKey, key.bsmKey)
-                        && Objects.equals(staticArgKeys, key.staticArgKeys);
+                if (obj instanceof BsmKey) {
+                    BsmKey other = (BsmKey)obj;
+                    return Objects.equals(bsmKey, other.bsmKey) &&
+                            Objects.equals(staticArgKeys, other.staticArgKeys);
+                } else {
+                    return false;
+                }
             }
         }
     }

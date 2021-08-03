@@ -26,7 +26,7 @@
 package com.sun.source.util;
 
 import com.sun.source.tree.*;
-import jdk.internal.javac.PreviewFeature;
+import jdk.internal.PreviewFeature;
 
 /**
  * A simple visitor for tree nodes.

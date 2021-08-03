@@ -135,12 +135,8 @@ public class Log extends AbstractLog {
      */
     public static class DeferredDiagnosticHandler extends DiagnosticHandler {
         private Queue<JCDiagnostic> deferred = new ListBuffer<>();
-<<<<<<< HEAD
         private Throwable t;
-        private final Filter<JCDiagnostic> filter;
-=======
         private final Predicate<JCDiagnostic> filter;
->>>>>>> 89e503586a4ed51bdd03aba622120bf6bc3b8360
 
         public DeferredDiagnosticHandler(Log log) {
             this(log, null);

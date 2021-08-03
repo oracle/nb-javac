@@ -358,11 +358,11 @@ public class List<A> extends AbstractCollection<A> implements java.util.List<A> 
      */
     @Override
     public boolean equals(Object other) {
-        if (other instanceof List<?> javacList)
-            return equals(this, javacList);
-        if (other instanceof java.util.List<?> javaUtilList) {
+        if (other instanceof List<?>)
+            return equals(this, (List<?>)other);
+        if (other instanceof java.util.List<?>) {
             List<A> t = this;
-            Iterator<?> oIter = javaUtilList.iterator();
+            Iterator<?> oIter = ((java.util.List<?>) other).iterator();
             while (t.tail != null && oIter.hasNext()) {
                 Object o = oIter.next();
                 if ( !(t.head == null ? o == null : t.head.equals(o)))

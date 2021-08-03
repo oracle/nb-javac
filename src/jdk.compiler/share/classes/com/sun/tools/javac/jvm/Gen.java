@@ -534,8 +534,8 @@ public class Gen extends JCTree.Visitor {
     private void checkStringConstant(DiagnosticPosition pos, Object constValue) {
         if (nerrs != 0 || // only complain about a long string once
             constValue == null ||
-            !(constValue instanceof String str) ||
-            str.length() < PoolWriter.MAX_STRING_LENGTH)
+            !(constValue instanceof String) ||
+            ((String)constValue).length() < PoolWriter.MAX_STRING_LENGTH)
             return;
         log.error(pos, Errors.LimitString);
         nerrs++;
@@ -828,8 +828,8 @@ public class Gen extends JCTree.Visitor {
 
         @Override
         public void visitIdent(JCIdent tree) {
-            if (tree.sym.owner instanceof ClassSymbol classSymbol) {
-                poolWriter.putClass(classSymbol);
+            if (tree.sym.owner instanceof ClassSymbol) {
+                poolWriter.putClass((ClassSymbol)tree.sym.owner);
             }
         }
 
@@ -892,8 +892,8 @@ public class Gen extends JCTree.Visitor {
 
     public boolean isConstantDynamic(Symbol sym) {
         return sym.kind == VAR &&
-                sym instanceof DynamicVarSymbol dynamicVarSymbol &&
-                dynamicVarSymbol.isDynamic();
+                sym instanceof DynamicVarSymbol &&
+                ((DynamicVarSymbol)sym).isDynamic();
     }
 
     /** Derived visitor method: generate code for a list of method arguments.
@@ -1678,8 +1678,9 @@ public class Gen extends JCTree.Visitor {
 
             while(alts != null && alts.head != null) {
                 JCExpression alt = alts.head;
-                if (alt instanceof JCAnnotatedType annotatedType) {
-                    res = res.prepend(new Pair<>(annotate.fromAnnotations(annotatedType.annotations), alt));
+                if (alt instanceof JCAnnotatedType) {
+                    JCAnnotatedType a = (JCAnnotatedType)alt;
+                    res = res.prepend(new Pair<>(annotate.fromAnnotations(a.annotations), alt));
                 } else {
                     res = res.prepend(new Pair<>(List.nil(), alt));
                 }
@@ -2045,13 +2046,13 @@ public class Gen extends JCTree.Visitor {
             // int variable we can use an incr instruction instead of
             // proceeding further.
             if ((tree.hasTag(PLUS_ASG) || tree.hasTag(MINUS_ASG)) &&
-                l instanceof LocalItem localItem &&
+                l instanceof LocalItem &&
                 tree.lhs.type.getTag().isSubRangeOf(INT) &&
                 tree.rhs.type.getTag().isSubRangeOf(INT) &&
                 tree.rhs.type.constValue() != null) {
                 int ival = ((Number) tree.rhs.type.constValue()).intValue();
                 if (tree.hasTag(MINUS_ASG)) ival = -ival;
-                localItem.incr(ival);
+                ((LocalItem)l).incr(ival);
                 result = l;
                 return;
             }
@@ -2086,9 +2087,9 @@ public class Gen extends JCTree.Visitor {
                 break;
             case PREINC: case PREDEC:
                 od.duplicate();
-                if (od instanceof LocalItem localItem &&
+                if (od instanceof LocalItem &&
                     (operator.opcode == iadd || operator.opcode == isub)) {
-                    localItem.incr(tree.hasTag(PREINC) ? 1 : -1);
+                    ((LocalItem)od).incr(tree.hasTag(PREINC) ? 1 : -1);
                     result = od;
                 } else {
                     od.load();
@@ -2104,10 +2105,10 @@ public class Gen extends JCTree.Visitor {
                 break;
             case POSTINC: case POSTDEC:
                 od.duplicate();
-                if (od instanceof LocalItem localItem &&
+                if (od instanceof LocalItem &&
                     (operator.opcode == iadd || operator.opcode == isub)) {
                     Item res = od.load();
-                    localItem.incr(tree.hasTag(POSTINC) ? 1 : -1);
+                    ((LocalItem)od).incr(tree.hasTag(POSTINC) ? 1 : -1);
                     result = res;
                 } else {
                     Item res = od.load();
@@ -2191,8 +2192,8 @@ public class Gen extends JCTree.Visitor {
             MethodType optype = (MethodType)operator.type;
             int opcode = operator.opcode;
             if (opcode >= if_icmpeq && opcode <= if_icmple &&
-                    rhs.type.constValue() instanceof Number number &&
-                    number.intValue() == 0) {
+                rhs.type.constValue() instanceof Number &&
+                ((Number) rhs.type.constValue()).intValue() == 0) {
                 opcode = opcode + (ifeq - if_icmpeq);
             } else if (opcode >= if_acmpeq && opcode <= if_acmpne &&
                        TreeInfo.isNull(rhs)) {

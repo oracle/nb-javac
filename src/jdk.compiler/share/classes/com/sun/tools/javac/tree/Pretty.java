@@ -702,7 +702,8 @@ public class Pretty extends JCTree.Visitor {
                 if ((tree.mods.flags & VARARGS) != 0) {
                     JCTree vartype = tree.vartype;
                     List<JCAnnotation> tas = null;
-                    if (vartype instanceof JCAnnotatedType annotatedType) {
+                    if (vartype instanceof JCAnnotatedType) {
+                        JCAnnotatedType annotatedType = (JCAnnotatedType)vartype;
                         tas = annotatedType.annotations;
                         vartype = annotatedType.underlyingType;
                     }

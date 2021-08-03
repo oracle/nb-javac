@@ -180,17 +180,17 @@ public class RichDiagnosticFormatter extends
      * @param arg the argument to be translated
      */
     protected void preprocessArgument(Object arg) {
-        if (arg instanceof Type type) {
-            preprocessType(type);
+        if (arg instanceof Type) {
+            preprocessType((Type)arg);
         }
-        else if (arg instanceof Symbol symbol) {
-            preprocessSymbol(symbol);
+        else if (arg instanceof Symbol) {
+            preprocessSymbol((Symbol)arg);
         }
-        else if (arg instanceof JCDiagnostic diagnostic) {
-            preprocessDiagnostic(diagnostic);
+        else if (arg instanceof JCDiagnostic) {
+            preprocessDiagnostic((JCDiagnostic)arg);
         }
-        else if (arg instanceof Iterable<?> iterable && !(arg instanceof Path)) {
-            for (Object o : iterable) {
+        else if (arg instanceof Iterable<?> && !(arg instanceof Path)) {
+            for (Object o : (Iterable<?>)arg) {
                 preprocessArgument(o);
             }
         }
@@ -556,8 +556,8 @@ public class RichDiagnosticFormatter extends
             if (indexOf(t, WhereClauseKind.TYPEVAR) == -1) {
                 //access the bound type and skip error types
                 Type bound = t.getUpperBound();
-                while ((bound instanceof ErrorType errorType))
-                    bound = errorType.getOriginalType();
+                while ((bound instanceof ErrorType))
+                    bound = ((ErrorType)bound).getOriginalType();
                 //retrieve the bound list - if the type variable
                 //has not been attributed the bound is not set
                 List<Type> bounds = (bound != null) &&

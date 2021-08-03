@@ -1375,35 +1375,64 @@ public class TreeInfo {
     }
 
     public static PatternPrimaryType primaryPatternType(JCPattern pat) {
-        return switch (pat.getTag()) {
-            case BINDINGPATTERN -> new PatternPrimaryType(((JCBindingPattern) pat).type, true);
-            case GUARDPATTERN -> {
+        PatternPrimaryType patternPrimaryType = null;
+        switch (pat.getTag()) {
+            case BINDINGPATTERN:
+                patternPrimaryType = new PatternPrimaryType(((JCBindingPattern) pat).type, true);
+                break;
+            case GUARDPATTERN: {
                 JCGuardPattern guarded = (JCGuardPattern) pat;
                 PatternPrimaryType nested = primaryPatternType(guarded.patt);
                 boolean unconditional = nested.unconditional();
                 if (guarded.expr.type.hasTag(BOOLEAN) && unconditional) {
                     unconditional = false;
-                    var constValue = guarded.expr.type.constValue();
+                    Object constValue = guarded.expr.type.constValue();
                     if (constValue != null && ((int) constValue) == 1) {
                         unconditional = true;
                     }
                 }
-                yield new PatternPrimaryType(nested.type(), unconditional);
+                patternPrimaryType =  new PatternPrimaryType(nested.type(), unconditional);
             }
-            case PARENTHESIZEDPATTERN -> primaryPatternType(((JCParenthesizedPattern) pat).pattern);
-            default -> throw new AssertionError();
-        };
+            break;
+            case PARENTHESIZEDPATTERN:
+                primaryPatternType(((JCParenthesizedPattern) pat).pattern);
+                break;
+            default: throw new AssertionError();
+        }
+        return patternPrimaryType;
     }
 
     public static JCBindingPattern primaryPatternTree(JCPattern pat) {
-        return switch (pat.getTag()) {
-            case BINDINGPATTERN -> (JCBindingPattern) pat;
-            case GUARDPATTERN -> primaryPatternTree(((JCGuardPattern) pat).patt);
-            case PARENTHESIZEDPATTERN -> primaryPatternTree(((JCParenthesizedPattern) pat).pattern);
-            default -> throw new AssertionError();
-        };
+        JCBindingPattern jcBindingPattern = null;
+        switch (pat.getTag()) {
+            case BINDINGPATTERN: jcBindingPattern = (JCBindingPattern) pat;
+            break;
+            case GUARDPATTERN: jcBindingPattern = primaryPatternTree(((JCGuardPattern) pat).patt);
+            break;
+            case PARENTHESIZEDPATTERN: jcBindingPattern =  primaryPatternTree(((JCParenthesizedPattern) pat).pattern);
+            break;
+            default: throw new AssertionError();
+        }
+        return jcBindingPattern;
     }
 
-    public record PatternPrimaryType(Type type, boolean unconditional) {}
+    public static class PatternPrimaryType {
+        private final Type type;
+        private final boolean unconditional;
+
+        public PatternPrimaryType(Type type, boolean unconditional) {
+            this.type = type;
+            this.unconditional = unconditional;
+        }
+
+        public Type type() {
+            return type;
+        }
+
+        public boolean unconditional() {
+            return unconditional;
+        }
+        
+    }
 
 }

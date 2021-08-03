@@ -43,6 +43,7 @@ import java.util.stream.Collectors;
 import com.sun.tools.javac.util.DefinedBy;
 import com.sun.tools.javac.util.DefinedBy.Api;
 import com.sun.tools.javac.util.StringUtils;
+import java.util.Map.Entry;
 
 /**
  * A processor which prints out elements.  Used to implement the
@@ -279,7 +280,7 @@ public class PrintingProcessor extends AbstractProcessor {
                          e.getEnclosedElements()
                          .stream()
                          .filter(elt -> elementUtils.getOrigin(elt) == Elements.Origin.EXPLICIT )
-                         .toList() ) )
+                         .collect(Collectors.toList()) ) )
                     this.visit(element);
             }
 
@@ -549,14 +550,14 @@ public class PrintingProcessor extends AbstractProcessor {
                 // checks are intended to preserve correctness in the
                 // face of some other kind of annotation being marked
                 // as mandated.
-
-                var entries = annotationMirror.getElementValues().entrySet();
-                if (entries.size() == 1) {
-                    var annotationType = annotationMirror.getAnnotationType();
-                    var annotationTypeAsElement = annotationType.asElement();
-
-                    var entry = entries.iterator().next();
-                    var annotationElements = entry.getValue();
+                //var entries = annotationMirror.getElementValues().entrySet();
+                annotationMirror.getElementValues().entrySet();
+                if (annotationMirror.getElementValues().entrySet().size() == 1) {
+                    DeclaredType annotationType = annotationMirror.getAnnotationType();
+                    Element annotationTypeAsElement = annotationType.asElement();
+                    
+                    Entry entry = annotationMirror.getElementValues().entrySet().iterator().next();
+                    AnnotationValue annotationElements = (AnnotationValue) entry.getValue();
 
                     // Check that the annotation type declaration has
                     // a single method named "value" and that it
@@ -564,11 +565,10 @@ public class PrintingProcessor extends AbstractProcessor {
                     // that it is an array of an annotation type and
                     // that annotation type in turn was repeatable.
                     if (annotationTypeAsElement.getKind() == ElementKind.ANNOTATION_TYPE) {
-                        var annotationMethods =
-                            ElementFilter.methodsIn(annotationTypeAsElement.getEnclosedElements());
+                        List<ExecutableElement> annotationMethods = ElementFilter.methodsIn(annotationTypeAsElement.getEnclosedElements());
                         if (annotationMethods.size() == 1) {
-                            var valueMethod = annotationMethods.get(0);
-                            var returnType = valueMethod.getReturnType();
+                            ExecutableElement valueMethod = annotationMethods.get(0);
+                            TypeMirror returnType = valueMethod.getReturnType();
 
                             if ("value".equals(valueMethod.getSimpleName().toString()) &&
                                 returnType.getKind() == TypeKind.ARRAY) {
@@ -583,7 +583,7 @@ public class PrintingProcessor extends AbstractProcessor {
                                         if (vals.size() < 2) {
                                             return false;
                                         } else {
-                                            for (var annotValue: vals) {
+                                            for (AnnotationValue annotValue: vals) {
                                                 indent();
                                                 writer.println(annotValue.toString());
                                             }

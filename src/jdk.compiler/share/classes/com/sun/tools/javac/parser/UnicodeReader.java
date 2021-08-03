@@ -179,9 +179,9 @@ public class UnicodeReader {
         } else if (character == '\\') {
             // May be an unicode escape.
             switch (unicodeEscape()) {
-                case BACKSLASH -> wasBackslash = true;
-                case VALID_ESCAPE -> wasBackslash = false;
-                case BROKEN_ESCAPE -> nextUnicodeInputCharacter(); //skip broken unicode escapes
+                case BACKSLASH: wasBackslash = true;break;
+                case VALID_ESCAPE: wasBackslash = false;break;
+                case BROKEN_ESCAPE: nextUnicodeInputCharacter();break; //skip broken unicode escapes
             }
         }
 

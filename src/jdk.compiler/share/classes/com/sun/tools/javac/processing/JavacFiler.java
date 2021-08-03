@@ -276,11 +276,11 @@ public class JavacFiler implements Filer, Closeable {
             this.fileObject = fileObject;
         }
 
-        @Override
-        public void write(byte b[], int off, int len) throws IOException {
-            Objects.checkFromIndexSize(off, len, b.length);
-            out.write(b, off, len);
-        }
+//        @Override
+//        public void write(byte b[], int off, int len) throws IOException {
+//            Objects.checkFromIndexSize(off, len, b.length);
+//            out.write(b, off, len);
+//        }
 
         @Override
         public synchronized void close() throws IOException {
@@ -563,17 +563,18 @@ public class JavacFiler implements Filer, Closeable {
         }
         checkFileReopening(fileObject, true);
 
-        if (fileObject instanceof JavaFileObject javaFileObject)
-            return new FilerOutputJavaFileObject(msym, null, javaFileObject);
+        if (fileObject instanceof JavaFileObject)
+            return new FilerOutputJavaFileObject(msym, null, (JavaFileObject)fileObject);
         else
             return new FilerOutputFileObject(msym, null, fileObject);
     }
 
     private void locationCheck(JavaFileManager.Location location) {
-        if (location instanceof StandardLocation standardLocation) {
-            if (!standardLocation.isOutputLocation())
+        if (location instanceof StandardLocation) {
+            StandardLocation stdLoc = (StandardLocation) location;
+            if (!stdLoc.isOutputLocation())
                 throw new IllegalArgumentException("Resource creation not supported in location " +
-                                                    standardLocation);
+                                                   stdLoc);
         }
     }
 
@@ -932,8 +933,9 @@ public class JavacFiler implements Filer, Closeable {
          * subject to annotation processing.
          */
         if ((typeName != null)) {
-            if (!(fileObject instanceof JavaFileObject javaFileObject))
+            if (!(fileObject instanceof JavaFileObject))
                 throw new AssertionError("JavaFileObject not found for " + fileObject);
+            JavaFileObject javaFileObject = (JavaFileObject)fileObject;
             switch(javaFileObject.getKind()) {
             case SOURCE:
                 generatedSourceNames.add(typeName);

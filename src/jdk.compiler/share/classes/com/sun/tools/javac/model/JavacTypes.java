@@ -126,7 +126,7 @@ public class JavacTypes implements javax.lang.model.util.Types {
         Type ty = (Type)t;
         return types.directSupertypes(ty).stream()
                 .map(Type::stripMetadataIfNeeded)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @DefinedBy(Api.LANGUAGE_MODEL)
@@ -333,17 +333,18 @@ public class JavacTypes implements javax.lang.model.util.Types {
                 || elem.getModifiers().contains(Modifier.PRIVATE))
             return Collections.emptySet();
 
-        if (!(elem instanceof MethodSymbol methodSymbol))
+        if (!(elem instanceof MethodSymbol))
             throw new IllegalArgumentException();
 
-        ClassSymbol origin = (ClassSymbol) methodSymbol.owner;
+        MethodSymbol m = (MethodSymbol) elem;
+        ClassSymbol origin = (ClassSymbol) m.owner;
 
         Set<MethodSymbol> results = new LinkedHashSet<>();
         for (Type t : types.closure(origin.type)) {
             if (t != origin.type) {
                 ClassSymbol c = (ClassSymbol) t.tsym;
-                for (Symbol sym : c.members().getSymbolsByName(methodSymbol.name)) {
-                    if (sym.kind == MTH && methodSymbol.overrides(sym, origin, types, true)) {
+                for (Symbol sym : c.members().getSymbolsByName(m.name)) {
+                    if (sym.kind == MTH && m.overrides(sym, origin, types, true)) {
                         results.add((MethodSymbol) sym);
                     }
                 }

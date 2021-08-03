@@ -51,8 +51,9 @@ public class DelegatingJavaFileManager implements JavaFileManager {
                                                  JavaFileManager releaseFM,
                                                  JavaFileManager originalFM) {
         context.put(JavaFileManager.class, (JavaFileManager) null);
-        JavaFileManager nue = originalFM instanceof StandardJavaFileManager standardJavaFileManager
-                ? new DelegatingSJFM(releaseFM, standardJavaFileManager)
+        JavaFileManager nue = originalFM instanceof StandardJavaFileManager
+                ? new DelegatingSJFM(releaseFM,
+                                                        (StandardJavaFileManager) originalFM)
                 : new DelegatingJavaFileManager(releaseFM, originalFM);
         context.put(JavaFileManager.class, nue);
     }

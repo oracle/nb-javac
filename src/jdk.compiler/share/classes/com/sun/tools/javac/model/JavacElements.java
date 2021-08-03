@@ -114,7 +114,7 @@ public class JavacElements implements Elements {
         enter = Enter.instance(context);
         resolve = Resolve.instance(context);
         JavacTask t = context.get(JavacTask.class);
-        javacTaskImpl = t instanceof JavacTaskImpl taskImpl ? taskImpl : null;
+        javacTaskImpl = t instanceof JavacTaskImpl ? (JavacTaskImpl) t : null;
         log = Log.instance(context);
         Source source = Source.instance(context);
         allowModules = Feature.MODULES.allowedInSource(source);

@@ -532,7 +532,7 @@ public abstract class PathFileObject implements JavaFileObject {
 
     @Override
     public boolean equals(Object other) {
-        return (other instanceof PathFileObject pathFileObject && path.equals(pathFileObject.path));
+        return (other instanceof PathFileObject && path.equals(((PathFileObject) other).path));
     }
 
     @Override

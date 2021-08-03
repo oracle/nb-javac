@@ -184,7 +184,8 @@ public class DiagnosticSource {
     protected char[] initBuf(JavaFileObject fileObject) throws IOException {
         char[] buf;
         CharSequence cs = fileObject.getCharContent(true);
-        if (cs instanceof CharBuffer charBuffer) {
+        if (cs instanceof CharBuffer) {
+            CharBuffer charBuffer = (CharBuffer)cs;
             buf = JavacFileManager.toArray(charBuffer);
             bufLen = charBuffer.limit();
         } else {

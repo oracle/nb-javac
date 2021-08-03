@@ -38,6 +38,8 @@ import com.sun.tools.javac.file.PathFileObject;
 import com.sun.tools.javac.tree.JCTree.*;
 
 import static com.sun.tools.javac.api.DiagnosticFormatter.PositionKind.*;
+import java.util.Arrays;
+import java.util.HashSet;
 
 /**
  * A raw formatter for diagnostic messages.
@@ -152,27 +154,23 @@ public final class RawDiagnosticFormatter extends AbstractDiagnosticFormatter {
 
     @Override
     protected String formatArgument(JCDiagnostic diag, Object arg, Locale l) {
-        String s;
+         String s;
         if (arg instanceof Formattable) {
             s = arg.toString();
-        } else if (arg instanceof JCExpression expression) {
+        } else if (arg instanceof JCExpression) {
             Assert.checkNonNull(rawDiagnosticPosHelper);
-            s = "@" + rawDiagnosticPosHelper.getPosition(expression);
-        } else if (arg instanceof PathFileObject pathFileObject) {
-            s = pathFileObject.getShortName();
-        } else if (arg instanceof Tag tag) {
-            s = "compiler.misc.tree.tag." + StringUtils.toLowerCase(tag.name());
-        } else if (arg instanceof Source && arg == Source.DEFAULT &&
-                CODES_NEEDING_SOURCE_NORMALIZATION.contains(diag.getCode())) {
-            s = "DEFAULT";
+            s = "@" + rawDiagnosticPosHelper.getPosition((JCExpression)arg);
+        } else if (arg instanceof PathFileObject) {
+            s = ((PathFileObject) arg).getShortName();
+        } else if (arg instanceof Tag) {
+            s = "compiler.misc.tree.tag." + StringUtils.toLowerCase(((Tag) arg).name());
         } else {
             s = super.formatArgument(diag, arg, null);
         }
         return (arg instanceof JCDiagnostic) ? "(" + s + ")" : s;
     }
     //where:
-        private static final Set<String> CODES_NEEDING_SOURCE_NORMALIZATION = Set.of(
-                "compiler.note.preview.filename", "compiler.note.preview.plural");
+        private static final Set<String> CODES_NEEDING_SOURCE_NORMALIZATION = new HashSet<>(Arrays.asList("compiler.note.preview.filename","compiler.note.preview.plural"));
 
     @Override
     protected String localize(Locale l, String key, Object... args) {

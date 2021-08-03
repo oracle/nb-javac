@@ -25,7 +25,7 @@
 
 package com.sun.source.tree;
 
-import jdk.internal.javac.PreviewFeature;
+import jdk.internal.PreviewFeature;
 
 /**
  * A marker interface for {@code Tree}s that may be used as {@link CaseTree} labels.
