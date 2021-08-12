@@ -41,8 +41,6 @@ import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.jvm.PoolWriter;
 import com.sun.tools.javac.main.Option;
 import com.sun.tools.javac.parser.Tokens;
-import com.sun.tools.javac.platform.PlatformDescription;
-import com.sun.tools.javac.platform.PlatformUtils;
 import com.sun.tools.javac.resources.CompilerProperties;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAssignOp;
@@ -437,7 +435,7 @@ public class Repair extends TreeTranslator {
             last.tail = List.nil();
         result = tree;
     }
-    
+
     @Override
     public void visitLambda(JCTree.JCLambda tree) {
         if (!allowLambda) {
