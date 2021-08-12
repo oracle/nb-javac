@@ -1395,7 +1395,7 @@ public class TreeInfo {
             }
             break;
             case PARENTHESIZEDPATTERN:
-                primaryPatternType(((JCParenthesizedPattern) pat).pattern);
+                patternPrimaryType = primaryPatternType(((JCParenthesizedPattern) pat).pattern);
                 break;
             default: throw new AssertionError();
         }
