@@ -3576,6 +3576,10 @@ public class Types {
         return new ErrorType(c, originalType);
     }
 
+    public Type createErrorType(Name name, TypeSymbol container, Type originalType) {
+        return new ErrorType(name, container, originalType);
+    }
+
     public Type createErrorType(Name name, Symbol container, Type originalType) {
         return new ErrorType(name, container, originalType);
     }
