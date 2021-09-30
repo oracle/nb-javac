@@ -52,6 +52,7 @@ import com.sun.tools.sjavac.pubapi.TypeDesc;
  *  This code and its internal interfaces are subject to change or
  *  deletion without notice.</b>
  */
+@SuppressWarnings("preview")
 public class PubapiVisitor extends ElementScanner14<Void, Void> {
 
     private PubApi collectedApi = new PubApi();
@@ -93,7 +94,7 @@ public class PubapiVisitor extends ElementScanner14<Void, Void> {
             Object constVal = e.getConstantValue();
             String constValStr = null;
             // TODO: This doesn't seem to be entirely accurate. What if I change
-            // from, say, 0 to 0L? (And the field is public static final so that
+            // from, say, 0 to 0L? (And the field is public final static so that
             // it could get inlined.)
             if (constVal != null) {
                 if (e.asType().toString().equals("char")) {
@@ -123,6 +124,7 @@ public class PubapiVisitor extends ElementScanner14<Void, Void> {
         return null;
     }
 
+    @SuppressWarnings("preview")
     @Override @DefinedBy(Api.LANGUAGE_MODEL)
     public Void visitRecordComponent(RecordComponentElement e, Void p) {
         PubVar v = new PubVar(e.getModifiers(),
@@ -150,20 +152,20 @@ public class PubapiVisitor extends ElementScanner14<Void, Void> {
     private List<PubApiTypeParam> getTypeParameters(List<? extends TypeParameterElement> elements) {
         return elements.stream()
                        .map(e -> new PubApiTypeParam(e.getSimpleName().toString(), getTypeDescs(e.getBounds())))
-                       .toList();
+                       .collect(Collectors.toList());
     }
 
     private List<TypeMirror> getParamTypes(ExecutableElement e) {
         return e.getParameters()
                 .stream()
                 .map(VariableElement::asType)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     private List<TypeDesc> getTypeDescs(List<? extends TypeMirror> list) {
         return list.stream()
                    .map(TypeDesc::fromType)
-                   .toList();
+                   .collect(Collectors.toList());
     }
 
     public PubApi getCollectedPubApi() {
