@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -197,7 +197,7 @@ public class LambdaToMethod extends TreeTranslator {
 
         @Override
         public boolean equals(Object o) {
-            if (!(o instanceof DedupedLambda)) {
+             if (!(o instanceof DedupedLambda)) {
                 return false;
             }
             DedupedLambda that = (DedupedLambda) o;
@@ -1558,12 +1558,9 @@ public class LambdaToMethod extends TreeTranslator {
         @Override
         public void visitVarDef(JCVariableDecl tree) {
             TranslationContext<?> context = context();
-            LambdaTranslationContext ltc = (context != null && context instanceof LambdaTranslationContext)?
-                    (LambdaTranslationContext)context :
-                    null;
-            if (ltc != null) {
+            if (context != null && context instanceof LambdaTranslationContext) {
                 if (frameStack.head.tree.hasTag(LAMBDA)) {
-                    ltc.addSymbol(tree.sym, LOCAL_VAR);
+                    ((LambdaTranslationContext)context).addSymbol(tree.sym, LOCAL_VAR);
                 }
                 // Check for type variables (including as type arguments).
                 // If they occur within class nested in a lambda, mark for erasure
@@ -2068,12 +2065,30 @@ public class LambdaToMethod extends TreeTranslator {
                         };
                         break;
                     case LOCAL_VAR:
-                        ret = new VarSymbol(sym.flags() & FINAL, sym.name, sym.type, translatedSym);
+                        ret = new VarSymbol(sym.flags() & FINAL, sym.name, sym.type, translatedSym) {
+                            @Override
+                            public Symbol baseSymbol() {
+                                //keep mapping with original symbol
+                                return sym;
+                            }
+                        };
                         ((VarSymbol) ret).pos = ((VarSymbol) sym).pos;
+                        // If sym.data == ElementKind.EXCEPTION_PARAMETER,
+                        // set ret.data = ElementKind.EXCEPTION_PARAMETER too.
+                        // Because method com.sun.tools.javac.jvm.Code.fillExceptionParameterPositions and
+                        // com.sun.tools.javac.jvm.Code.fillLocalVarPosition would use it.
+                        // See JDK-8257740 for more information.
+                        if (((VarSymbol) sym).isExceptionParameter()) {
+                            ((VarSymbol) ret).setData(ElementKind.EXCEPTION_PARAMETER);
+                        }
                         break;
                     case PARAM:
                         ret = new VarSymbol((sym.flags() & FINAL) | PARAMETER, sym.name, types.erasure(sym.type), translatedSym);
                         ((VarSymbol) ret).pos = ((VarSymbol) sym).pos;
+                        // Set ret.data. Same as case LOCAL_VAR above.
+                        if (((VarSymbol) sym).isExceptionParameter()) {
+                            ((VarSymbol) ret).setData(ElementKind.EXCEPTION_PARAMETER);
+                        }
                         break;
                     default:
                         Assert.error(skind.name());

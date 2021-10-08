@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -122,7 +122,7 @@ public class JavacFileManager extends BaseFileManager implements StandardJavaFil
         REVERSE {
             @Override
             public int compare(Path f1, Path f2) {
-                return -f1.getFileName().compareTo(f2.getFileName());
+                return f2.getFileName().compareTo(f1.getFileName());
             }
         }
     }
@@ -956,17 +956,16 @@ public class JavacFileManager extends BaseFileManager implements StandardJavaFil
     }
 
     @Override @DefinedBy(Api.COMPILER)
-    public Iterable<? extends JavaFileObject> getJavaFileObjectsFromPaths(
-        Collection<? extends Path> paths)
-    {
+    public Iterable<? extends JavaFileObject> getJavaFileObjectsFromPaths(Collection<? extends Path> paths) {
         ArrayList<PathFileObject> result;
-        if (paths instanceof Collection<?>)
-            result = new ArrayList<>(((Collection<?>)paths).size());
-        else
+        if (paths != null) {
+            result = new ArrayList<>(paths.size());
+            for (Path p: paths)
+                result.add(PathFileObject.forSimplePath(this,
+                        fsInfo.getCanonicalFile(p), p));
+        } else {
             result = new ArrayList<>();
-        for (Path p: paths)
-            result.add(PathFileObject.forSimplePath(this,
-                    fsInfo.getCanonicalFile(p), p));
+        }
         return result;
     }
 
@@ -1099,7 +1098,7 @@ public class JavacFileManager extends BaseFileManager implements StandardJavaFil
 
         @Override
         public boolean equals(Object o) {
-          if (o == null || !(o instanceof PathAndContainer)) {
+            if (o == null || !(o instanceof PathAndContainer)) {
             return false;
           }
           PathAndContainer that = (PathAndContainer) o;

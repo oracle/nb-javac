@@ -214,8 +214,12 @@ public class JavaTokenizer extends UnicodeReader {
      * @param key    error key to report.
      */
     protected void lexError(DiagnosticFlag flags, int pos, JCDiagnostic.Error key) {
+
         log.error(flags, seek + pos, key);
-        tk = TokenKind.ERROR;
+        if (flags != DiagnosticFlag.SOURCE_LEVEL) {
+            tk = TokenKind.ERROR;
+        }
+
         errPos = pos;
     }
 
@@ -789,6 +793,13 @@ public class JavaTokenizer extends UnicodeReader {
                     lexError(pos, Errors.InvalidHexNumber);
                     break;
                 }
+            }
+            // If it is not a floating point literal,
+            // the octal number should be rescanned correctly.
+            if (radix == 8) {
+                sb.setLength(0);
+                reset(pos);
+                scanDigits(pos, 8);
             }
 
             if (acceptOneOf('l', 'L')) {

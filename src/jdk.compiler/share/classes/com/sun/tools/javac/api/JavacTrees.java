@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -247,9 +247,11 @@ public class JavacTrees extends DocTrees {
         syms = Symtab.instance(context);
         fileManager = context.get(JavaFileManager.class);
         JavacTask t = context.get(JavacTask.class);
+
         if (t instanceof JavacTaskImpl)
             javacTaskImpl = (JavacTaskImpl) t;
         compiler = com.sun.tools.javac.main.JavaCompiler.instance(context);
+
     }
 
     @Override @DefinedBy(Api.COMPILER_TREE)
@@ -480,7 +482,7 @@ public class JavacTrees extends DocTrees {
                         new Log.DeferredDiagnosticHandler(log);
                 try {
                     Env<AttrContext> env = getAttrContext(path.getTreePath());
-                    Type t = attr.attribType(((DCReference) tree).qualifierExpression, env);
+                    Type t = attr.attribType(((DCReference)tree).qualifierExpression, env);
                     if (t != null && !t.isErroneous()) {
                         return t;
                     }
@@ -579,7 +581,7 @@ public class JavacTrees extends DocTrees {
                     Type e = t;
                     // If this is an array type convert to element type
                     while (e instanceof ArrayType)
-                        e = ((ArrayType) e).elemtype;
+                        e = ((ArrayType)e).elemtype;
                     tsym = e.tsym;
                     memberName = (Name) ref.memberName;
                 }
@@ -653,12 +655,10 @@ public class JavacTrees extends DocTrees {
         return null;
     }
 
-    /** @see com.sun.tools.javadoc.ClassDocImpl#findField */
     private VarSymbol findField(ClassSymbol tsym, Name fieldName) {
         return searchField(tsym, fieldName, new HashSet<>());
     }
 
-    /** @see com.sun.tools.javadoc.ClassDocImpl#searchField */
     private VarSymbol searchField(ClassSymbol tsym, Name fieldName, Set<ClassSymbol> searched) {
         if (searched.contains(tsym)) {
             return null;
@@ -705,7 +705,6 @@ public class JavacTrees extends DocTrees {
         return null;
     }
 
-    /** @see com.sun.tools.javadoc.ClassDocImpl#findConstructor */
     MethodSymbol findConstructor(ClassSymbol tsym, List<Type> paramTypes) {
         for (Symbol sym : tsym.members().getSymbolsByName(names.init)) {
             if (sym.kind == MTH) {
@@ -717,12 +716,10 @@ public class JavacTrees extends DocTrees {
         return null;
     }
 
-    /** @see com.sun.tools.javadoc.ClassDocImpl#findMethod */
     private MethodSymbol findMethod(ClassSymbol tsym, Name methodName, List<Type> paramTypes) {
         return searchMethod(tsym, methodName, paramTypes, new HashSet<>());
     }
 
-    /** @see com.sun.tools.javadoc.ClassDocImpl#searchMethod */
     private MethodSymbol searchMethod(ClassSymbol tsym, Name methodName,
                                        List<Type> paramTypes, Set<ClassSymbol> searched) {
         //### Note that this search is not necessarily what the compiler would do!
@@ -804,7 +801,6 @@ public class JavacTrees extends DocTrees {
         return null;
     }
 
-    /** @see com.sun.tools.javadoc.ClassDocImpl */
     private boolean hasParameterTypes(MethodSymbol method, List<Type> paramTypes) {
         if (paramTypes == null)
             return true;
@@ -837,7 +833,7 @@ public class JavacTrees extends DocTrees {
     public String getDocComment(TreePath path) {
         CompilationUnitTree t = path.getCompilationUnit();
         Tree leaf = path.getLeaf();
-        if (t instanceof JCTree.JCCompilationUnit && leaf instanceof JCTree) {
+       if (t instanceof JCTree.JCCompilationUnit && leaf instanceof JCTree) {
             JCCompilationUnit cu = (JCCompilationUnit) t;
             if (cu.docComments != null) {
                 return cu.docComments.getCommentText((JCTree) leaf);
@@ -891,6 +887,7 @@ public class JavacTrees extends DocTrees {
 
     @Override @DefinedBy(Api.COMPILER_TREE)
     public boolean isAccessible(Scope scope, Element member, DeclaredType type) {
+
         if (scope instanceof JavacScope
                 && member instanceof Symbol
                 && type instanceof com.sun.tools.javac.code.Type) {
@@ -901,6 +898,7 @@ public class JavacTrees extends DocTrees {
             return resolve.isAccessible(env, (com.sun.tools.javac.code.Type)type, (Symbol)member, true);
         } else
             return false;
+
     }
 
     private Env<AttrContext> getAttrContext(TreePath path) {
@@ -1161,7 +1159,7 @@ public class JavacTrees extends DocTrees {
     static JavaFileObject asJavaFileObject(FileObject fileObject) {
         JavaFileObject jfo = null;
 
-        if (fileObject instanceof JavaFileObject) {
+       if (fileObject instanceof JavaFileObject) {
             jfo = (JavaFileObject) fileObject;
             checkHtmlKind(fileObject, Kind.HTML);
             return jfo;
@@ -1306,7 +1304,7 @@ public class JavacTrees extends DocTrees {
      */
     @Override @DefinedBy(Api.COMPILER_TREE)
     public TypeMirror getOriginalType(javax.lang.model.type.ErrorType errorType) {
-        if (errorType instanceof com.sun.tools.javac.code.Type.ErrorType) {
+         if (errorType instanceof com.sun.tools.javac.code.Type.ErrorType) {
             return ((com.sun.tools.javac.code.Type.ErrorType)errorType).getOriginalType();
         }
         if (errorType instanceof com.sun.tools.javac.code.Type.ClassType &&

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2003, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -88,7 +88,7 @@ public abstract class Attribute implements AnnotationValue {
         @DefinedBy(Api.LANGUAGE_MODEL)
         public <R, P> R accept(AnnotationValueVisitor<R, P> v, P p) {
             if (value instanceof String)
-                return v.visitString((String) value, p);
+                return v.visitString((String)value, p);
             if (value instanceof Integer) {
                 int i = (Integer) value;
                 switch (type.getTag()) {

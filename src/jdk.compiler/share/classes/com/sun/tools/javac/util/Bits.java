@@ -84,6 +84,7 @@ public class Bits {
 
     }
 
+
     public enum BitsOpKind {
         INIT,
         CLEAR,
@@ -101,6 +102,7 @@ public class Bits {
     private final static int wordlen = 32;
     private final static int wordshift = 5;
     private final static int wordmask = wordlen - 1;
+
 
     public int[] bits = null;
     // This field will store last version of bits after every change.

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -28,14 +28,18 @@ package com.sun.tools.javac.util;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Locale;
+import java.util.Set;
 import javax.tools.JavaFileObject;
 
 import com.sun.tools.javac.api.DiagnosticFormatter.Configuration.*;
 import com.sun.tools.javac.api.Formattable;
+import com.sun.tools.javac.code.Source;
 import com.sun.tools.javac.file.PathFileObject;
 import com.sun.tools.javac.tree.JCTree.*;
 
 import static com.sun.tools.javac.api.DiagnosticFormatter.PositionKind.*;
+import java.util.Arrays;
+import java.util.HashSet;
 
 /**
  * A raw formatter for diagnostic messages.
@@ -150,7 +154,7 @@ public final class RawDiagnosticFormatter extends AbstractDiagnosticFormatter {
 
     @Override
     protected String formatArgument(JCDiagnostic diag, Object arg, Locale l) {
-        String s;
+         String s;
         if (arg instanceof Formattable) {
             s = arg.toString();
         } else if (arg instanceof JCExpression) {
@@ -165,6 +169,8 @@ public final class RawDiagnosticFormatter extends AbstractDiagnosticFormatter {
         }
         return (arg instanceof JCDiagnostic) ? "(" + s + ")" : s;
     }
+    //where:
+        private static final Set<String> CODES_NEEDING_SOURCE_NORMALIZATION = new HashSet<>(Arrays.asList("compiler.note.preview.filename","compiler.note.preview.plural"));
 
     @Override
     protected String localize(Locale l, String key, Object... args) {

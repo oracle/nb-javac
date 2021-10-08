@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -45,7 +45,7 @@ public class Constants {
      */
     public static Object decode(Object value, Type type) {
         if (value instanceof Integer) {
-            int i = (Integer) value;
+            int i = (Integer)value;
             switch (type.getTag()) {
             case BOOLEAN:  return i != 0;
             case CHAR:     return (char) i;
@@ -70,7 +70,7 @@ public class Constants {
         case CHAR:      return formatChar((Character) value);
         }
         if (value instanceof String)
-            return formatString((String) value);
+            return formatString((String)value);
         return value + "";
     }
 

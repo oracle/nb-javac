@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1999, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -185,9 +185,9 @@ public class DiagnosticSource {
         char[] buf;
         CharSequence cs = fileObject.getCharContent(true);
         if (cs instanceof CharBuffer) {
-            CharBuffer cb = (CharBuffer) cs;
-            buf = JavacFileManager.toArray(cb);
-            bufLen = cb.limit();
+            CharBuffer charBuffer = (CharBuffer)cs;
+            buf = JavacFileManager.toArray(charBuffer);
+            bufLen = charBuffer.limit();
         } else {
             buf = cs.toString().toCharArray();
             bufLen = buf.length;

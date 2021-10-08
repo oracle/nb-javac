@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1999, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -197,6 +197,11 @@ public class ClassReader {
     int[] parameterNameIndices;
 
     /**
+     * A table to hold the access flags of the method parameters.
+     */
+    int[] parameterAccessFlags;
+
+    /**
      * A table to hold annotations for method parameters.
      */
     ParameterAnnotations[] parameterAnnotations;
@@ -276,8 +281,7 @@ public class ClassReader {
         preview = Preview.instance(context);
         allowModules     = Feature.MODULES.allowedInSource(source);
         allowRecords = Feature.RECORDS.allowedInSource(source);
-        allowSealedTypes = (!preview.isPreview(Feature.SEALED_CLASSES) || preview.isEnabled()) &&
-                Feature.SEALED_CLASSES.allowedInSource(source);
+        allowSealedTypes = Feature.SEALED_CLASSES.allowedInSource(source);
 
         saveParameterNames = options.isSet(PARAMETERS);
 
@@ -570,9 +574,13 @@ public class ClassReader {
                         public Type getEnclosingType() {
                             if (!completed) {
                                 completed = true;
+
                                 try {
-                                    tsym.complete();
+                                    tsym.apiComplete();
                                 } catch (CompletionFailure cf) {}
+
+
+
                                 Type enclosingType = tsym.type.getEnclosingType();
                                 if (enclosingType != Type.noType) {
                                     List<Type> typeArgs =
@@ -1066,6 +1074,7 @@ public class ClassReader {
                         sawMethodParameters = true;
                         int numEntries = nextByte();
                         parameterNameIndices = new int[numEntries];
+                        parameterAccessFlags = new int[numEntries];
                         haveParameterNameIndices = true;
                         int index = 0;
                         for (int i = 0; i < numEntries; i++) {
@@ -1074,7 +1083,9 @@ public class ClassReader {
                             if ((flags & (Flags.MANDATED | Flags.SYNTHETIC)) != 0) {
                                 continue;
                             }
-                            parameterNameIndices[index++] = nameIndex;
+                            parameterNameIndices[index] = nameIndex;
+                            parameterAccessFlags[index] = flags;
+                            index++;
                         }
                     }
                     bp = newbp;
@@ -1454,7 +1465,10 @@ public class ClassReader {
                 }
             } else if (proxy.type.tsym.flatName() == syms.previewFeatureInternalType.tsym.flatName()) {
                 sym.flags_field |= PREVIEW_API;
-                setFlagIfAttributeTrue(proxy, sym, names.essentialAPI, PREVIEW_ESSENTIAL_API);
+                setFlagIfAttributeTrue(proxy, sym, names.reflective, PREVIEW_REFLECTIVE);
+            } else if (proxy.type.tsym.flatName() == syms.valueBasedInternalType.tsym.flatName()) {
+                Assert.check(sym.kind == TYP);
+                sym.flags_field |= VALUE_BASED;
             } else {
                 if (proxy.type.tsym == syms.annotationTargetType.tsym) {
                     target = proxy;
@@ -1465,7 +1479,9 @@ public class ClassReader {
                     setFlagIfAttributeTrue(proxy, sym, names.forRemoval, DEPRECATED_REMOVAL);
                 }  else if (proxy.type.tsym == syms.previewFeatureType.tsym) {
                     sym.flags_field |= PREVIEW_API;
-                    setFlagIfAttributeTrue(proxy, sym, names.essentialAPI, PREVIEW_ESSENTIAL_API);
+                    setFlagIfAttributeTrue(proxy, sym, names.reflective, PREVIEW_REFLECTIVE);
+                }  else if (proxy.type.tsym == syms.valueBasedType.tsym && sym.kind == TYP) {
+                    sym.flags_field |= VALUE_BASED;
                 }
                 proxies.append(proxy);
             }
@@ -1475,7 +1491,7 @@ public class ClassReader {
     //where:
         private void setFlagIfAttributeTrue(CompoundAnnotationProxy proxy, Symbol sym, Name attribute, long flag) {
             for (Pair<Name, Attribute> v : proxy.values) {
-                if (v.fst == attribute && v.snd instanceof Attribute.Constant) {
+                 if (v.fst == attribute && v.snd instanceof Attribute.Constant) {
                     Attribute.Constant c = (Attribute.Constant)v.snd;
                     if (c.type == syms.booleanType && ((Integer)c.value) != 0) {
                         sym.flags_field |= flag;
@@ -1530,9 +1546,6 @@ public class ClassReader {
     }
 
     Type readTypeOrClassSymbol(int i) {
-        // support preliminary jsr175-format class files
-        if (poolReader.hasTag(i, CONSTANT_Class))
-            return poolReader.getClass(i).type;
         return readTypeToProxy(i);
     }
     Type readTypeToProxy(int i) {
@@ -2145,7 +2158,7 @@ public class ClassReader {
                     if (attr.type.tsym == syms.deprecatedType.tsym) {
                         sym.flags_field |= (DEPRECATED | DEPRECATED_ANNOTATION);
                         Attribute forRemoval = attr.member(names.forRemoval);
-                        if (forRemoval instanceof Attribute.Constant) {
+                       if (forRemoval instanceof Attribute.Constant) {
                             Attribute.Constant c = (Attribute.Constant) forRemoval;
                             if (c.type == syms.booleanType && ((Integer) c.value) != 0) {
                                 sym.flags_field |= DEPRECATED_REMOVAL;
@@ -2400,6 +2413,7 @@ public class ClassReader {
         sym.params = params.toList();
         parameterAnnotations = null;
         parameterNameIndices = null;
+        parameterAccessFlags = null;
     }
 
 
@@ -2409,6 +2423,10 @@ public class ClassReader {
     private VarSymbol parameter(int index, Type t, MethodSymbol owner, Set<Name> exclude) {
         long flags = PARAMETER;
         Name argName;
+        if (parameterAccessFlags != null && index < parameterAccessFlags.length
+                && parameterAccessFlags[index] != 0) {
+            flags |= parameterAccessFlags[index];
+        }
         if (parameterNameIndices != null && index < parameterNameIndices.length
                 && parameterNameIndices[index] != 0) {
             argName = optPoolEntry(parameterNameIndices[index], poolReader::getName, names.empty);
@@ -2559,8 +2577,21 @@ public class ClassReader {
         for (int i = 0; i < fieldCount; i++) enterMember(c, readField());
         Assert.check(methodCount == nextChar());
         for (int i = 0; i < methodCount; i++) enterMember(c, readMethod());
-
+        if (c.isRecord()) {
+            for (RecordComponent rc: c.getRecordComponents()) {
+                rc.accessor = lookupMethod(c, rc.name, List.nil());
+            }
+        }
         typevars = typevars.leave();
+    }
+
+    private MethodSymbol lookupMethod(TypeSymbol tsym, Name name, List<Type> argtypes) {
+        for (Symbol s : tsym.members().getSymbolsByName(name, s -> s.kind == MTH)) {
+            if (types.isSameTypes(s.type.getParameterTypes(), argtypes)) {
+                return (MethodSymbol) s;
+            }
+        }
+        return null;
     }
 
     /** Read inner class info. For each inner/outer pair allocate a
@@ -2830,8 +2861,7 @@ public class ClassReader {
         public boolean equals(Object other) {
             if (this == other)
                 return true;
-
-            if (!(other instanceof SourceFileObject))
+             if (!(other instanceof SourceFileObject))
                 return false;
 
             SourceFileObject o = (SourceFileObject) other;

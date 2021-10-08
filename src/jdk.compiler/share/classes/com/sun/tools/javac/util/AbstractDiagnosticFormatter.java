@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -149,7 +149,7 @@ public abstract class AbstractDiagnosticFormatter implements DiagnosticFormatter
         if (fullname)
             return fo.getName();
         else if (fo instanceof PathFileObject)
-            return ((PathFileObject) fo).getShortName();
+            return ((PathFileObject)fo).getShortName();
         else
             return PathFileObject.getSimpleName(fo);
     }
@@ -403,7 +403,7 @@ public abstract class AbstractDiagnosticFormatter implements DiagnosticFormatter
         return config;
     }
 
-    static public class SimpleConfiguration implements Configuration {
+    public static class SimpleConfiguration implements Configuration {
 
         protected Map<MultilineLimit, Integer> multilineLimits;
         protected EnumSet<DiagnosticPart> visibleParts;

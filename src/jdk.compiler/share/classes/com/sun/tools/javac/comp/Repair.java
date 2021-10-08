@@ -39,6 +39,7 @@ import com.sun.tools.javac.code.Type.ClassType;
 import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.jvm.PoolWriter;
+import com.sun.tools.javac.main.Option;
 import com.sun.tools.javac.parser.Tokens;
 import com.sun.tools.javac.resources.CompilerProperties;
 import com.sun.tools.javac.tree.JCTree;
@@ -71,6 +72,7 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.MissingPlatformError;
 import com.sun.tools.javac.util.Name;
+import com.sun.tools.javac.util.Options;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -121,9 +123,11 @@ public class Repair extends TreeTranslator {
     private Name fixedTopLevelName;
     private Symbol runtimeExceptionDefaultConstructor = null;
     private Symbol runtimeExceptionConstructor = null;
+    private Context context;
 
     private Repair(Context context) {
         context.put(repairKey, this);
+        this.context = context;
         syms = Symtab.instance(context);
         rs = Resolve.instance(context);
         enter = Enter.instance(context);
@@ -413,7 +417,7 @@ public class Repair extends TreeTranslator {
             l.head = translate(l.head);
             if (!hasError && l.head != null && (l.head.type == null
                     || (l.head.type.tsym.flags() & Flags.ENUM) == 0
-                    && l.head.type.constValue() == null)) {
+                    && (l.head.type.constValue() == null && !isSourceVersionSupportSwitchPattern()))) {
                 LOGGER.warning("Repair.visitCase tree [" + tree + "] has wrong expression type [" + l.head.type + "]."); //NOI18N
                 hasError = true;
                 if (err == null && errMessage == null)
@@ -458,6 +462,11 @@ public class Repair extends TreeTranslator {
         return generateErrStat(make, pos, msg);
     }
 
+    private boolean isSourceVersionSupportSwitchPattern(){
+        Options options = Options.instance(context);
+        String sourceVersion = options.get(Option.SOURCE);
+        return sourceVersion.compareTo(Source.JDK17.name) >= 0;
+    }
     JCStatement generateErrStat(TreeMaker make, DiagnosticPosition pos, String msg) {
         make.at(pos);
         ClassType ctype = (ClassType)syms.runtimeExceptionType;

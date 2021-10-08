@@ -35,4 +35,4 @@ package com.sun.source.tree;
  * @author Jonathan Gibbons
  * @since 1.6
  */
-public interface ExpressionTree extends Tree {}
+public interface ExpressionTree extends Tree, CaseLabelTree {}

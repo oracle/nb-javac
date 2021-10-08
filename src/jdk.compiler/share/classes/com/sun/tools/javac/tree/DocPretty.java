@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1999, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -501,7 +501,7 @@ public class DocPretty implements DocTreeVisitor<Void,Void> {
                 print(attrs, " ");
                 DocTree last = node.getAttributes().get(attrs.size() - 1);
                 if (node.isSelfClosing() && last instanceof AttributeTree
-                        && ((AttributeTree) last).getValueKind() == ValueKind.UNQUOTED)
+                        && ((AttributeTree)last).getValueKind() == ValueKind.UNQUOTED)
                     print(" ");
             }
             if (node.isSelfClosing())

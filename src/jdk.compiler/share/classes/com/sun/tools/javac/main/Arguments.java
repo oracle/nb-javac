@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1999, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -447,6 +447,7 @@ public class Arguments {
             }
         }
 
+
         if (!checkDirectory(Option.D)) {
             return false;
         }
@@ -546,7 +547,7 @@ public class Arguments {
 
         boolean lintOptions = options.isUnset(Option.XLINT_CUSTOM, "-" + LintCategory.OPTIONS.option);
         if (lintOptions && source.compareTo(Source.DEFAULT) < 0 && !options.isSet(Option.RELEASE)) {
-            if (fm instanceof BaseFileManager) {
+             if (fm instanceof BaseFileManager) {
                 if (source.compareTo(Source.JDK8) <= 0) {
                     if (((BaseFileManager) fm).isDefaultBootClassPath())
                         log.warning(LintCategory.OPTIONS, Warnings.SourceNoBootclasspath(source.name));
@@ -834,11 +835,6 @@ public class Arguments {
             doclintOpts.add(DocLint.XCHECK_PACKAGE + checkPackages);
         }
 
-        String format = options.get(Option.DOCLINT_FORMAT);
-        if (format != null) {
-            doclintOpts.add(DocLint.XHTML_VERSION_PREFIX + format);
-        }
-
         return List.from(doclintOpts.toArray(new String[doclintOpts.size()]));
     }
 
@@ -900,7 +896,7 @@ public class Arguments {
 
     private void report(DiagnosticInfo diag) {
         // Would be good to have support for -XDrawDiagnostics here
-        if (diag instanceof JCDiagnostic.Error) {
+         if (diag instanceof JCDiagnostic.Error) {
             log.error((JCDiagnostic.Error)diag);
         } else if (diag instanceof JCDiagnostic.Warning){
             log.warning((JCDiagnostic.Warning)diag);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2003, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -53,6 +53,7 @@ import static com.sun.tools.javac.code.Flags.SYNTHETIC;
 import static com.sun.tools.javac.code.Kinds.Kind.MDL;
 import static com.sun.tools.javac.code.Kinds.Kind.MTH;
 import static com.sun.tools.javac.code.Kinds.Kind.PCK;
+import static com.sun.tools.javac.code.Kinds.Kind.TYP;
 import static com.sun.tools.javac.code.Kinds.Kind.VAR;
 import static com.sun.tools.javac.code.Scope.LookupKind.NON_RECURSIVE;
 import static com.sun.tools.javac.code.TypeTag.ARRAY;
@@ -369,13 +370,18 @@ public class Annotate {
                 }
             }
 
-            // Note: @Deprecated has no effect on local variables and parameters
             if (!c.type.isErroneous()
                     && types.isSameType(c.type, syms.previewFeatureType)) {
                 toAnnotate.flags_field |= Flags.PREVIEW_API;
-                if (isAttributeTrue(c.member(names.essentialAPI))) {
-                    toAnnotate.flags_field |= Flags.PREVIEW_ESSENTIAL_API;
+                if (isAttributeTrue(c.member(names.reflective))) {
+                    toAnnotate.flags_field |= Flags.PREVIEW_REFLECTIVE;
                 }
+            }
+
+            if (!c.type.isErroneous()
+                    && toAnnotate.kind == TYP
+                    && types.isSameType(c.type, syms.valueBasedType)) {
+                toAnnotate.flags_field |= Flags.VALUE_BASED;
             }
         }
 
@@ -404,7 +410,7 @@ public class Annotate {
     }
     //where:
         private boolean isAttributeTrue(Attribute attr) {
-            if (attr instanceof Attribute.Constant) {
+             if (attr instanceof Attribute.Constant) {
                 Attribute.Constant v = (Attribute.Constant) attr;
                 if (v.type == syms.booleanType && ((Integer) v.value) != 0) {
                     return true;
@@ -447,7 +453,7 @@ public class Annotate {
     {
         // The attribute might have been entered if it is Target or Repeatable
         // Because TreeCopier does not copy type, redo this if type is null
-        if (a.attribute == null || a.type == null || !(a.attribute instanceof Attribute.TypeCompound)) {
+       if (a.attribute == null || a.type == null || !(a.attribute instanceof Attribute.TypeCompound)) {
             // Create a new TypeCompound
             List<Pair<MethodSymbol,Attribute>> elems =
                     attributeAnnotationValues(a, expectedAnnotationType, env);

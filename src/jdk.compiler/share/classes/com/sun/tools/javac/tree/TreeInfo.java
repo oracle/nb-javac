@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1999, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -40,6 +40,7 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import static com.sun.tools.javac.code.Flags.*;
 import static com.sun.tools.javac.code.Kinds.Kind.*;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
+import static com.sun.tools.javac.code.TypeTag.BOOLEAN;
 import static com.sun.tools.javac.code.TypeTag.BOT;
 import static com.sun.tools.javac.tree.JCTree.Tag.*;
 import static com.sun.tools.javac.tree.JCTree.Tag.BLOCK;
@@ -429,6 +430,9 @@ public class TreeInfo {
             JCTry t = (JCTry) tree;
             return endPos((t.finalizer != null) ? t.finalizer
                           : (t.catchers.nonEmpty() ? t.catchers.last().body : t.body));
+        } else if (tree.hasTag(SWITCH) &&
+                   ((JCSwitch) tree).endpos != Position.NOPOS) {
+            return ((JCSwitch) tree).endpos;
         } else if (tree.hasTag(SWITCH_EXPRESSION) &&
                    ((JCSwitchExpression) tree).endpos != Position.NOPOS) {
             return ((JCSwitchExpression) tree).endpos;
@@ -551,6 +555,10 @@ public class TreeInfo {
                 JCBindingPattern node = (JCBindingPattern)tree;
                 return getStartPos(node.var);
             }
+            case GUARDPATTERN: {
+                JCGuardPattern node = (JCGuardPattern) tree;
+                return getStartPos(node.patt);
+            }
             case ERRONEOUS: {
                 JCErroneous node = (JCErroneous)tree;
                 if (node.errs != null && node.errs.nonEmpty()) {
@@ -645,6 +653,14 @@ public class TreeInfo {
                 return getEndPos(((JCWhileLoop) tree).body, endPosTable);
             case ANNOTATED_TYPE:
                 return getEndPos(((JCAnnotatedType) tree).underlyingType, endPosTable);
+            case PARENTHESIZEDPATTERN: {
+                JCParenthesizedPattern node = (JCParenthesizedPattern) tree;
+                return getEndPos(node.pattern, endPosTable);
+            }
+            case GUARDPATTERN: {
+                JCGuardPattern node = (JCGuardPattern) tree;
+                return getEndPos(node.expr, endPosTable);
+            }
             case ERRONEOUS: {
                 JCErroneous node = (JCErroneous)tree;
                 if (node.errs != null && node.errs.nonEmpty())
@@ -1058,7 +1074,7 @@ public class TreeInfo {
      */
     public static long firstFlag(long flags) {
         long flag = 1;
-        while ((flag & flags & ExtendedStandardFlags) == 0)
+        while ((flag & flags) == 0)
             flag = flag << 1;
         return flag;
     }
@@ -1350,6 +1366,73 @@ public class TreeInfo {
 
     public static boolean isPackageInfo(JCCompilationUnit tree) {
         return tree.sourcefile.isNameCompatible("package-info", JavaFileObject.Kind.SOURCE);
+    }
+
+    public static boolean isErrorEnumSwitch(JCExpression selector, List<JCCase> cases) {
+        return selector.type.tsym.kind == Kinds.Kind.ERR &&
+               cases.stream().flatMap(c -> c.labels.stream())
+                             .allMatch(p -> p.hasTag(IDENT));
+    }
+
+    public static PatternPrimaryType primaryPatternType(JCPattern pat) {
+        PatternPrimaryType patternPrimaryType = null;
+        switch (pat.getTag()) {
+            case BINDINGPATTERN:
+                patternPrimaryType = new PatternPrimaryType(((JCBindingPattern) pat).type, true);
+                break;
+            case GUARDPATTERN: {
+                JCGuardPattern guarded = (JCGuardPattern) pat;
+                PatternPrimaryType nested = primaryPatternType(guarded.patt);
+                boolean unconditional = nested.unconditional();
+                if (guarded.expr.type.hasTag(BOOLEAN) && unconditional) {
+                    unconditional = false;
+                    Object constValue = guarded.expr.type.constValue();
+                    if (constValue != null && ((int) constValue) == 1) {
+                        unconditional = true;
+                    }
+                }
+                patternPrimaryType =  new PatternPrimaryType(nested.type(), unconditional);
+            }
+            break;
+            case PARENTHESIZEDPATTERN:
+                patternPrimaryType = primaryPatternType(((JCParenthesizedPattern) pat).pattern);
+                break;
+            default: throw new AssertionError();
+        }
+        return patternPrimaryType;
+    }
+
+    public static JCBindingPattern primaryPatternTree(JCPattern pat) {
+        JCBindingPattern jcBindingPattern = null;
+        switch (pat.getTag()) {
+            case BINDINGPATTERN: jcBindingPattern = (JCBindingPattern) pat;
+            break;
+            case GUARDPATTERN: jcBindingPattern = primaryPatternTree(((JCGuardPattern) pat).patt);
+            break;
+            case PARENTHESIZEDPATTERN: jcBindingPattern =  primaryPatternTree(((JCParenthesizedPattern) pat).pattern);
+            break;
+            default: throw new AssertionError();
+        }
+        return jcBindingPattern;
+    }
+
+    public static class PatternPrimaryType {
+        private final Type type;
+        private final boolean unconditional;
+
+        public PatternPrimaryType(Type type, boolean unconditional) {
+            this.type = type;
+            this.unconditional = unconditional;
+        }
+
+        public Type type() {
+            return type;
+        }
+
+        public boolean unconditional() {
+            return unconditional;
+        }
+        
     }
 
 }
