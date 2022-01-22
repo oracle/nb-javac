@@ -160,9 +160,8 @@ class TextBlockSupport {
      * Invoke String::stripLeading through reflection.
      */
     static String stripLeading(String string) {
-        boolean isBlankStr;
         try {
-            string = (String) isBlank.invoke(null, string);
+            string = (String) stripLeading.invoke(null, string);
         } catch (InvocationTargetException | IllegalAccessException ex) {
             throw new RuntimeException(ex);
         }
