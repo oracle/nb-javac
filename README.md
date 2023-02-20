@@ -56,7 +56,7 @@ $ ant -f ./make/langtools/netbeans/nb-javac zip-nb-javac-sources
    to stage the release, which will get promoted to maven central, after it has
    been manually released.
 
-# Installation/Usage
+## Installation
 
 #### 1. Copy jars by following commands
 
@@ -73,19 +73,25 @@ cp nb-javac/make/langtools/netbeans/nb-javac/dist/nb-javac-$ver-api.jar netbeans
 touch netbeans/nbbuild/testuserdir/.lastmodified
 ```
 
-# Documentation 
+## Documentation 
 
 - https://cwiki.apache.org/confluence/display/NETBEANS/Overview%3A+nb-javac
 - https://cwiki.apache.org/confluence/display/NETBEANS/Release+Schedule
 - https://confluence.oraclecorp.com/confluence/display/NB/nb-javac+JDK14+uptake
 - https://wiki.se.oracle.com/display/JPG/Behavior+without+NB-Javac
 
-# Help
+## Help
 - Subscribe or mail the users@netbeans.apache.org list - Ask questions, find answers, and also help other users.
 - Subscribe or mail the dev@netbeans.apache.org list - Join development discussions, propose new ideas and connect with contributors.
 
-# Contributing
+## Contributing
 See the  [Contributing Policy](./CONTRIBUTING.md)
 
-# Security
+## Security
 See the  [Security Policy](./SECURITY.md)
+
+## License
+
+Copyright (c) 2022 Oracle and/or its affiliates.
+
+Released under the GNU General Public License (GPL)
