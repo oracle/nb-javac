@@ -1,13 +1,13 @@
 # About nb-javac!
 "nb-javac" is a patched version of OpenJDK "javac", i.e., the Java compiler. This has long been part of NetBeans, providing a highly tuned Java compiler specifically for the Java editor i.e., parsing and lexing for features such as syntax coloring, code completion.
 
-# Prerequisite
+## Prerequisite
   - Git
   - Ant 1.9.9 or above
   - JDK 8 or above (to build nb-javac)
   - Apache Maven
 
-# Building nb-javac jar files
+## Building nb-javac jar files
 1. Obtain the code with the following command
 
 ```
@@ -35,7 +35,7 @@ at location `./make/langtools/netbeans/nb-javac/dist/`
 $ ant -f ./make/langtools/netbeans/nb-javac zip-nb-javac-sources
 ```
 
-# Publishing to maven central / OSSRH
+## Publishing to maven central / OSSRH
 
 1. Aquire an account for OSSRH from sonatype and get access to the target groupId
    See here: https://central.sonatype.org/pages/ossrh-guide.html
@@ -92,6 +92,6 @@ See the  [Security Policy](./SECURITY.md)
 
 ## License
 
-Copyright (c) 2022 Oracle and/or its affiliates.
+Copyright (c) 2022, 2023 Oracle and/or its affiliates.
 
 Released under the GNU General Public License (GPL)
